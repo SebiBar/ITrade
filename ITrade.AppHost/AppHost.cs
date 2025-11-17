@@ -1,5 +1,12 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<Projects.ITrade_ApiServices>("itrade-apiservices");
+var db = builder.AddPostgres("db")
+    .WithDataVolume()
+    .WithPgWeb()
+    .AddDatabase("ITradeDB");
+
+builder.AddProject<Projects.ITrade_ApiServices>("itrade-apiservices")
+    .WithReference(db)
+    .WaitFor(db);
 
 builder.Build().Run();
