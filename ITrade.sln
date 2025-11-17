@@ -1,10 +1,18 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36705.20 d17.14
+VisualStudioVersion = 17.14.36705.20
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITrade.AppHost", "ITrade.AppHost\ITrade.AppHost.csproj", "{2E238470-2CE9-498E-AF50-703E0E21D82B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITrade.ServiceDefaults", "ITrade.ServiceDefaults\ITrade.ServiceDefaults.csproj", "{DC308C77-B8BD-8C05-441C-B4C79ABB2078}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITrade.ApiServices", "ITrade.ApiServices\ITrade.ApiServices.csproj", "{674F1118-93CF-B59D-9CAD-9A6E0A25A6E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITrade.DB", "ITrade.DB\ITrade.DB.csproj", "{A3BC7085-561A-4196-9ED9-5073AA215CFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITrade.Services", "ITrade.Services\ITrade.Services.csproj", "{B2BCF06B-749D-4F91-82F9-2255D960442F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITrade.Common", "ITrade.Common\ITrade.Common.csproj", "{C845FDDB-4EC0-4B0F-BB5E-5ED569C60775}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +28,22 @@ Global
 		{DC308C77-B8BD-8C05-441C-B4C79ABB2078}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC308C77-B8BD-8C05-441C-B4C79ABB2078}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC308C77-B8BD-8C05-441C-B4C79ABB2078}.Release|Any CPU.Build.0 = Release|Any CPU
+		{674F1118-93CF-B59D-9CAD-9A6E0A25A6E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{674F1118-93CF-B59D-9CAD-9A6E0A25A6E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{674F1118-93CF-B59D-9CAD-9A6E0A25A6E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{674F1118-93CF-B59D-9CAD-9A6E0A25A6E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3BC7085-561A-4196-9ED9-5073AA215CFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3BC7085-561A-4196-9ED9-5073AA215CFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3BC7085-561A-4196-9ED9-5073AA215CFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3BC7085-561A-4196-9ED9-5073AA215CFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2BCF06B-749D-4F91-82F9-2255D960442F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2BCF06B-749D-4F91-82F9-2255D960442F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2BCF06B-749D-4F91-82F9-2255D960442F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2BCF06B-749D-4F91-82F9-2255D960442F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C845FDDB-4EC0-4B0F-BB5E-5ED569C60775}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C845FDDB-4EC0-4B0F-BB5E-5ED569C60775}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C845FDDB-4EC0-4B0F-BB5E-5ED569C60775}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C845FDDB-4EC0-4B0F-BB5E-5ED569C60775}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
