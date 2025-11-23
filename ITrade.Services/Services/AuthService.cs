@@ -3,7 +3,6 @@ using ITrade.DB.Entities;
 using ITrade.DB.Enums;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Requests;
-using ITrade.Services.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,21 +12,23 @@ namespace ITrade.Services.Services
         Context context,
         IPasswordHasher<User> hasher,
         ITokenService tokenService,
-        IEmailService emailService) : IAuthService
+        IEmailService emailService
+        ) : IAuthService
     {
-        public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
+        public async Task RegisterAsync(RegisterRequest registerRequest)
         {
-            ValidateRegisterRequest(request);
+            ValidateRegisterRequest(registerRequest);
 
             var user = new User
             {
-                Email = request.Email,
-                PasswordHash = hasher.HashPassword(null!, request.Password),
-                FullName = request.FullName,
-                UserRoleId = (int)request.Role
+                Email = registerRequest.Email,
+                FullName = registerRequest.FullName,
+                UserRoleId = (int)registerRequest.Role
             };
 
-            context.Users.Add(user);
+            user.PasswordHash = hasher.HashPassword(user, registerRequest.Password);
+
+            await context.Users.AddAsync(user);
             await context.SaveChangesAsync();
 
             var token = await tokenService.CreateVerifyEmailTokenAsync(user.Id);
@@ -38,12 +39,34 @@ namespace ITrade.Services.Services
                 textBody: $"Please verify your email by visiting the following link: https://yourdomain.com/verify-email?token={token}",
                 htmlBody: $"Please verify your email by clicking the following link: https://yourdomain.com/verify-email?token={token}"
             );
+        }
 
-            return new RegisterResponse(
-                UserId: user.Id,
-                Email: user.Email,
-                FullName: user.FullName
-            );
+        public async Task VerifyEmailAsync(string emailedToken)
+        {
+            if (emailedToken == null)
+            {
+                throw new ArgumentException("Invalid token.", nameof(emailedToken));
+            }
+
+            var emailedHashed = tokenService.HashTokenString(emailedToken);
+
+            var token = await context.Tokens
+                .Where(t => t.TokenStringHash == emailedHashed)
+                .Include(t => t.User)
+                .FirstOrDefaultAsync()
+                ?? throw new ArgumentException("Invalid token.", nameof(emailedToken));
+
+            if (token.ExpirationDate < DateTime.UtcNow)
+            {
+                throw new ArgumentException("Invalid token.", nameof(emailedToken));
+            }
+
+            var user = token.User;
+            user.IsEmailConfirmed = true;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            context.Tokens.Remove(token);
+            await context.SaveChangesAsync();
         }
 
         private async void ValidateRegisterRequest(RegisterRequest req)

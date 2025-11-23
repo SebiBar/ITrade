@@ -8,11 +8,12 @@ namespace ITrade.Services.Services
 {
     public class EmailService(
         IHttpClientFactory httpClientFactory,
-        IOptions<MailJetSettings> _mailJetSettings) : IEmailService
+        IOptions<MailJetSettings> mailJetSettings
+        ) : IEmailService
     {
         private readonly HttpClient _client = httpClientFactory.CreateClient("Mailjet");
-        private readonly string fromEmail = _mailJetSettings.Value.SenderEmail;
-        private readonly string fromEmailName = _mailJetSettings.Value.SenderName;
+        private readonly string fromEmail = mailJetSettings.Value.SenderEmail;
+        private readonly string fromEmailName = mailJetSettings.Value.SenderName;
 
         public async Task SendEmailAsync(string toEmail, string title, string textBody, string htmlBody)
         {
@@ -35,7 +36,7 @@ namespace ITrade.Services.Services
             var json = JsonSerializer.Serialize(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync(_mailJetSettings.Value.Endpoint, content);
+            var response = await _client.PostAsync(mailJetSettings.Value.Endpoint, content);
             if (!response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync();

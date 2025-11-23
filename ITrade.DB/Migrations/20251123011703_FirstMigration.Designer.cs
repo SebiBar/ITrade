@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ITrade.DB.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20251117152716_FirstMigration")]
+    [Migration("20251123011703_FirstMigration")]
     partial class FirstMigration
     {
         /// <inheritdoc />
@@ -252,6 +252,10 @@ namespace ITrade.DB.Migrations
 
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenStringHash")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("TokenTypeId")
                         .HasColumnType("integer");

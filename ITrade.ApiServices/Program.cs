@@ -2,11 +2,16 @@ using DotNetEnv;
 using ITrade.ApiServices.Helpers;
 using ITrade.Common.Helpers;
 using ITrade.DB;
+using ITrade.DB.Entities;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,8 +26,57 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+builder.Services.Configure<TokenSettings>(
+    builder.Configuration.GetSection("Token"));
+
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("Jwt"));
+
 builder.Services.Configure<MailJetSettings>(
     builder.Configuration.GetSection("MailJet"));
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    var jwtSection = builder.Configuration.GetSection("Jwt");
+    var jwt = jwtSection.Get<JwtSettings>()!;
+    options.RequireHttpsMetadata = true;
+    options.SaveToken = false;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
+
+        ValidateIssuer = true,
+        ValidIssuer = jwt.Issuer,
+
+        ValidateAudience = true,
+        ValidAudience = jwt.Audience,
+
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
+
+        NameClaimType = ClaimTypes.NameIdentifier
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
+});
 
 builder.Services.AddHttpClient("Mailjet", (sp, client) =>
 {
@@ -36,6 +90,7 @@ builder.Services.AddHttpClient("Mailjet", (sp, client) =>
 
 //Service initializations here
 builder.Services.AddScoped<IDatabaseSeedService, DatabaseSeedService>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();

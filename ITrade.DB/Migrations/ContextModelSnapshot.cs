@@ -250,6 +250,10 @@ namespace ITrade.DB.Migrations
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("TokenStringHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("TokenTypeId")
                         .HasColumnType("integer");
 

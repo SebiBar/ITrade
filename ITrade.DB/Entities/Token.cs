@@ -6,7 +6,7 @@ namespace ITrade.DB.Entities
     {
         [Key]
         public int Id { get; set; }
-        public required string TokenString { get; set; }
+        public required string TokenStringHash { get; set; }
         public DateTime ExpirationDate { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int TokenTypeId { get; set; }

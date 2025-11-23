@@ -4,13 +4,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Route("auth")]
-    public class AuthController(IAuthService authService) : ControllerBase
+    [Route("auth")]
+    public class AuthController(IAuthService authService) : BaseApiController
     {
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequest request)
+        public async Task<IActionResult> Register(RegisterRequest registerRequest)
         {
-            return Ok(await authService.RegisterAsync(request));
+            await authService.RegisterAsync(registerRequest);
+            return Ok();
+        }
+
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+        {
+            await authService.VerifyEmailAsync(token);
+            return Ok();
         }
     }
 }
