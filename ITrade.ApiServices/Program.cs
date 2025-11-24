@@ -26,6 +26,9 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+builder.Services.Configure<UrlSettings>(
+    builder.Configuration.GetSection("Urls"));
+
 builder.Services.Configure<TokenSettings>(
     builder.Configuration.GetSection("Token"));
 
@@ -34,6 +37,9 @@ builder.Services.Configure<JwtSettings>(
 
 builder.Services.Configure<MailJetSettings>(
     builder.Configuration.GetSection("MailJet"));
+
+builder.Services.Configure<TemplateSettings>(
+    builder.Configuration.GetSection("Templates"));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -93,7 +99,9 @@ builder.Services.AddScoped<IDatabaseSeedService, DatabaseSeedService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Services.AddSingleton<IEmailService, EmailService>();
+builder.Services.AddSingleton<ITemplateService, TemplateService>();
 
 
 builder.Services.AddProblemDetails();

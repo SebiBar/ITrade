@@ -1,10 +1,12 @@
-﻿using ITrade.DB;
+﻿using ITrade.Common.Helpers;
+using ITrade.DB;
 using ITrade.DB.Entities;
 using ITrade.DB.Enums;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Requests;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace ITrade.Services.Services
 {
@@ -12,7 +14,10 @@ namespace ITrade.Services.Services
         Context context,
         IPasswordHasher<User> hasher,
         ITokenService tokenService,
-        IEmailService emailService
+        IEmailService emailService,
+        ITemplateService templateService,
+        IOptions<TemplateSettings> templateSettings,
+        IOptions<UrlSettings> urlSettings
         ) : IAuthService
     {
         public async Task RegisterAsync(RegisterRequest registerRequest)
@@ -33,12 +38,7 @@ namespace ITrade.Services.Services
 
             var token = await tokenService.CreateVerifyEmailTokenAsync(user.Id);
 
-            await emailService.SendEmailAsync(
-                toEmail: user.Email,
-                title: "Verify your email",
-                textBody: $"Please verify your email by visiting the following link: https://yourdomain.com/verify-email?token={token}",
-                htmlBody: $"Please verify your email by clicking the following link: https://yourdomain.com/verify-email?token={token}"
-            );
+            await SendVerificationEmailAsync(user.Email, user.FullName, token);
         }
 
         public async Task VerifyEmailAsync(string emailedToken)
@@ -94,6 +94,28 @@ namespace ITrade.Services.Services
 
             if (await context.Users.FirstOrDefaultAsync(u => u.Email == req.Email) != null)
                 throw new InvalidOperationException("User with this email already exists.");
+        }
+
+        private async Task SendVerificationEmailAsync(string toEmail, string fullName, string tokenValue)
+        {
+            var apiBase = urlSettings.Value.ApiBase.TrimEnd('/');
+            var verifyLink = $"{apiBase}/auth/verify-email?token={tokenValue}";
+
+            var model = new Dictionary<string, string>
+            {
+                ["FullName"] = string.IsNullOrWhiteSpace(fullName) ? "there" : fullName,
+                ["VerifyLink"] = verifyLink
+            };
+
+            var html = await templateService.RenderAsync(templateSettings.Value.Email.VerifyHtml, model);
+            var text = await templateService.RenderAsync(templateSettings.Value.Email.VerifyText, model);
+
+            await emailService.SendEmailAsync(
+                toEmail: toEmail,
+                title: "Verify your ITrade account",
+                textBody: text,
+                htmlBody: html
+            );
         }
     }
 }
