@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace ITrade.ApiServices.Controllers
 {
     [Route("auth")]
-    public class AuthController(IAuthService authService) : BaseApiController
+    public class AuthController(
+        IAuthService authService,
+        ITokenService tokenService
+        ) : BaseApiController
     {
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
@@ -19,6 +22,18 @@ namespace ITrade.ApiServices.Controllers
         {
             await authService.VerifyEmailAsync(token);
             return Ok();
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginRequest loginRequest)
+        {
+            return Ok(await authService.LoginAsync(loginRequest));
+        }
+
+        [HttpPost("refresh-tokens")]
+        public async Task<IActionResult> RefreshTokens([FromQuery] string refreshToken)
+        {             
+            return Ok(await tokenService.RefreshTokensAsync(refreshToken));
         }
     }
 }

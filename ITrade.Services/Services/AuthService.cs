@@ -4,6 +4,7 @@ using ITrade.DB.Entities;
 using ITrade.DB.Enums;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Requests;
+using ITrade.Services.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -67,6 +68,47 @@ namespace ITrade.Services.Services
 
             context.Tokens.Remove(token);
             await context.SaveChangesAsync();
+        }
+
+        public async Task<LoginResponse> LoginAsync(LoginRequest request)
+        {
+            ValidateLoginRequest(request);
+
+            var user = await context.Users
+                .FirstOrDefaultAsync(u => u.Email == request.Email)
+                ?? throw new ArgumentException("Invalid credentials.", nameof(request));
+
+            if (hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+            {
+                throw new ArgumentException("Invalid credentials.", nameof(request));
+            }
+
+            if (user.IsEmailConfirmed == false)
+            {
+                throw new InvalidOperationException("Please confirm your email.");
+            }
+
+            var jwt = tokenService.CreateJwtAsync(user.Id);
+            var refresh = await tokenService.CreateRefreshTokenAsync(user.Id);
+
+            return new LoginResponse
+            (
+                user.Id,
+                user.FullName,
+                user.Email,
+                jwt,
+                refresh
+            );
+        }
+
+        private void ValidateLoginRequest(LoginRequest req)
+        {
+            if (req == null)
+                throw new ArgumentException("Request cannot be null.", nameof(req));
+            if (string.IsNullOrWhiteSpace(req.Email))
+                throw new ArgumentException("Email is required.", nameof(req.Email));
+            if (string.IsNullOrWhiteSpace(req.Password))
+                throw new ArgumentException("Password is required.", nameof(req.Password));
         }
 
         private async void ValidateRegisterRequest(RegisterRequest req)

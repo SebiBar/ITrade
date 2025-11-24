@@ -1,9 +1,7 @@
 ﻿using ITrade.Services.Interfaces;
-using Microsoft.Extensions.Options;
-using System.Text;
-using Razor.Templating.Core;
 using Microsoft.Extensions.Hosting;
-using ITrade.Common.Helpers;
+using Razor.Templating.Core;
+using System.Text;
 
 namespace ITrade.Services.Services
 {
