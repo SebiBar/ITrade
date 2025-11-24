@@ -11,7 +11,7 @@ namespace ITrade.ApiServices.Controllers
         ) : BaseApiController
     {
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequest registerRequest)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
             await authService.RegisterAsync(registerRequest);
             return Ok();
@@ -25,7 +25,7 @@ namespace ITrade.ApiServices.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequest loginRequest)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
             return Ok(await authService.LoginAsync(loginRequest));
         }
