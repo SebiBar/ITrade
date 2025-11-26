@@ -7,7 +7,7 @@ namespace ITrade.ApiServices.Controllers
     {
         protected int GetUserId()
         {
-            return 1;
+            return int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
         }
     }
 }
