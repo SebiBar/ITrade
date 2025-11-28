@@ -9,7 +9,6 @@ namespace ITrade.Services.Services
         IHostEnvironment env
         ) : ITemplateService
     {
-
         public async Task<string> RenderAsync(string relativePath, IReadOnlyDictionary<string, string> model)
         {
             var path = NormalizePath(relativePath);

@@ -5,9 +5,8 @@ namespace ITrade.Services.Interfaces
 {
     public interface IAuthService
     {
-        public Task RegisterAsync(RegisterRequest request);
-        public Task VerifyEmailAsync(string emailedToken);
-        public Task<LoginResponse> LoginAsync(LoginRequest request);
-
+        Task RegisterAsync(RegisterRequest request);
+        Task VerifyEmailAsync(string emailedToken);
+        Task<LoginResponse> LoginAsync(LoginRequest request);
     }
 }

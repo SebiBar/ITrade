@@ -59,6 +59,11 @@ namespace ITrade.DB
                 .WithMany(u => u.ReceivedUserReviews)
                 .HasForeignKey(ur => ur.RevieweeId);
 
+            //auto filter soft deleted Projects
+            modelBuilder.Entity<Project>().HasQueryFilter(p => !p.IsDeleted);
+            modelBuilder.Entity<ProjectRequest>().HasQueryFilter(pr => !pr.Project.IsDeleted);
+            modelBuilder.Entity<ProjectTag>().HasQueryFilter(pt => !pt.Project.IsDeleted);
+
         }
     }
 }

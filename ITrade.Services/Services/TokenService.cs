@@ -5,6 +5,7 @@ using ITrade.DB.Enums;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Responses;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -23,11 +24,12 @@ namespace ITrade.Services.Services
     {
         private readonly int tokenLength = tokenSettings.Value.TokenLength;
 
-        public string CreateJwtAsync(int userId)
+        public string CreateJwt(int userId, string role)
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Role, role)
             };
 
             var creds = new SigningCredentials(
@@ -35,16 +37,15 @@ namespace ITrade.Services.Services
                 SecurityAlgorithms.HmacSha256
             );
 
-            var jwt = new JwtSecurityToken(
+            var token = new JwtSecurityToken(
                 issuer: jwtSettings.Value.Issuer,
                 audience: jwtSettings.Value.Audience,
                 claims: claims,
-                notBefore: DateTime.UtcNow,
                 expires: DateTime.UtcNow.AddHours(jwtSettings.Value.ExpiresInHours),
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         public async Task<string> CreateRefreshTokenAsync(int userId)
@@ -92,18 +93,26 @@ namespace ITrade.Services.Services
         public async Task<RefreshTokensResponse> RefreshTokensAsync(string refreshToken)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
-            {
                 throw new ArgumentException("Invalid or expired token.", nameof(refreshToken));
-            }
 
-            var oldRefresh = context.Tokens
-                .FirstOrDefault(t => t.TokenStringHash == HashTokenString(refreshToken)
-                    && t.TokenTypeId == (int)TokenTypeEnum.Refresh
-                    && t.ExpirationDate > DateTime.UtcNow)
+            var oldRefresh = await context.Tokens
+                .FirstOrDefaultAsync(t =>
+                    t.TokenStringHash == HashTokenString(refreshToken) &&
+                    t.TokenTypeId == (int)TokenTypeEnum.Refresh &&
+                    t.ExpirationDate > DateTime.UtcNow)
                 ?? throw new ArgumentException("Invalid or expired token.", nameof(refreshToken));
 
-            var newJwt = CreateJwtAsync(oldRefresh.UserId);
-            var newRefresh = await CreateRefreshTokenAsync(oldRefresh.UserId);
+            var user = await context.Users
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserRole.Name
+                })
+                .FirstOrDefaultAsync(u => u.Id == oldRefresh.UserId)
+                ?? throw new InvalidOperationException("User no longer exists.");
+
+            var newJwt = CreateJwt(user.Id, user.Name); //Name means RoleName here
+            var newRefresh = await CreateRefreshTokenAsync(user.Id);
 
             context.Tokens.Remove(oldRefresh);
             await context.SaveChangesAsync();

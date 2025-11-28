@@ -75,6 +75,7 @@ namespace ITrade.Services.Services
             ValidateLoginRequest(request);
 
             var user = await context.Users
+                .Include(u => u.UserRole)
                 .FirstOrDefaultAsync(u => u.Email == request.Email)
                 ?? throw new ArgumentException("Invalid credentials.", nameof(request));
 
@@ -88,7 +89,7 @@ namespace ITrade.Services.Services
                 throw new InvalidOperationException("Please confirm your email.");
             }
 
-            var jwt = tokenService.CreateJwtAsync(user.Id);
+            var jwt = tokenService.CreateJwt(user.Id, user.UserRole.Name);
             var refresh = await tokenService.CreateRefreshTokenAsync(user.Id);
 
             return new LoginResponse

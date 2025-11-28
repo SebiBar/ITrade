@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ITrade.DB.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20251123011703_FirstMigration")]
+    [Migration("20251128162800_FirstMigration")]
     partial class FirstMigration
     {
         /// <inheritdoc />
@@ -118,6 +118,16 @@ namespace ITrade.DB.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool?>("Accepted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");

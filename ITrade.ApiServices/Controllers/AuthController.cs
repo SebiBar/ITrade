@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [Route("auth")]
+    [ApiController, Route("auth")]
     public class AuthController(
         IAuthService authService,
         ITokenService tokenService
-        ) : BaseApiController
+        ) : ControllerBase
     {
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)

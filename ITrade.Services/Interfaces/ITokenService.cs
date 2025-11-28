@@ -1,13 +1,14 @@
-﻿using ITrade.Services.Responses;
+﻿using ITrade.DB.Entities;
+using ITrade.Services.Responses;
 
 namespace ITrade.Services.Interfaces
 {
     public interface ITokenService
     {
-        public string CreateJwtAsync(int userId);
-        public Task<string> CreateRefreshTokenAsync(int userId);
-        public Task<string> CreateVerifyEmailTokenAsync(int userId);
-        public string HashTokenString(string tokenString);
-        public Task<RefreshTokensResponse> RefreshTokensAsync(string refreshToken);
+        string CreateJwt(int userId, string userRole);
+        Task<string> CreateRefreshTokenAsync(int userId);
+        Task<string> CreateVerifyEmailTokenAsync(int userId);
+        string HashTokenString(string tokenString);
+        Task<RefreshTokensResponse> RefreshTokensAsync(string refreshToken);
     }
 }
