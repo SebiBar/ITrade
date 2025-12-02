@@ -4,11 +4,9 @@ using ITrade.DB.Entities;
 using ITrade.DB.Enums;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Responses;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -17,10 +15,10 @@ using System.Text;
 namespace ITrade.Services.Services
 {
     public class TokenService(
-        Context context, 
+        Context context,
         IOptions<TokenSettings> tokenSettings,
         IOptions<JwtSettings> jwtSettings
-        ) : ITokenService
+    ) : ITokenService
     {
         private readonly int tokenLength = tokenSettings.Value.TokenLength;
 

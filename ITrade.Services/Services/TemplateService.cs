@@ -7,7 +7,7 @@ namespace ITrade.Services.Services
 {
     public class TemplateService(
         IHostEnvironment env
-        ) : ITemplateService
+    ) : ITemplateService
     {
         public async Task<string> RenderAsync(string relativePath, IReadOnlyDictionary<string, string> model)
         {

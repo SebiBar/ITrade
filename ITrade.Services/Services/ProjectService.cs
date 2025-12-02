@@ -1,13 +1,17 @@
-﻿using ITrade.DB.Entities;
+﻿using ITrade.DB;
+using ITrade.DB.Entities;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Requests;
 using ITrade.Services.Responses;
 
 namespace ITrade.Services.Services
 {
-    public class ProjectService : IProjectService
+    public class ProjectService(
+        Context context,
+        ICurrentUserService currentUserService
+    ) : IProjectService
     {
-        public Task<int> CreateProjectAsync(ProjectRequestRequest projectRequest)
+        Task<ICollection<ProjectResponse>> IProjectService.GetUserProjects()
         {
             throw new NotImplementedException();
         }
@@ -17,7 +21,12 @@ namespace ITrade.Services.Services
             throw new NotImplementedException();
         }
 
-        public Task<ProjectResponse> GetUserProjects()
+        public Task<ICollection<ProjectResponse>> SearchProjectsAsync(string query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> CreateProjectAsync(ProjectRequestRequest projectRequest)
         {
             throw new NotImplementedException();
         }

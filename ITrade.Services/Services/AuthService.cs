@@ -19,7 +19,7 @@ namespace ITrade.Services.Services
         ITemplateService templateService,
         IOptions<TemplateSettings> templateSettings,
         IOptions<UrlSettings> urlSettings
-        ) : IAuthService
+    ) : IAuthService
     {
         public async Task RegisterAsync(RegisterRequest registerRequest)
         {

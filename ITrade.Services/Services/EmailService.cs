@@ -9,7 +9,7 @@ namespace ITrade.Services.Services
     public class EmailService(
         IHttpClientFactory httpClientFactory,
         IOptions<MailJetSettings> mailJetSettings
-        ) : IEmailService
+    ) : IEmailService
     {
         private readonly HttpClient _client = httpClientFactory.CreateClient("Mailjet");
         private readonly string fromEmail = mailJetSettings.Value.SenderEmail;
