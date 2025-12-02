@@ -26,7 +26,7 @@ namespace ITrade.Services.Services
             throw new NotImplementedException();
         }
 
-        public Task<int> CreateProjectAsync(ProjectRequestRequest projectRequest)
+        public Task<int> CreateProjectAsync(ProjectReq projectRequest)
         {
             throw new NotImplementedException();
         }
@@ -36,7 +36,7 @@ namespace ITrade.Services.Services
             throw new NotImplementedException();
         }
 
-        public Task UpdateProjectAsync(int projectId, ProjectRequestRequest projectRequest)
+        public Task UpdateProjectAsync(int projectId, ProjectReq projectRequest)
         {
             throw new NotImplementedException();
         }

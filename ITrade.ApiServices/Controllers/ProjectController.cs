@@ -17,14 +17,14 @@ namespace ITrade.ApiServices.Controllers
         }
 
         [HttpPost, Authorize(Roles = "Client")]
-        public async Task<IActionResult> CreateProject([FromBody] ProjectRequestRequest projectRequest)
+        public async Task<IActionResult> CreateProject([FromBody] ProjectRequestReq projectRequest)
         {
             return Ok(await projectService.CreateProjectAsync(projectRequest));
         }
 
         [HttpPut("{projectId:int}"), Authorize(Roles = "Client")]
         public async Task<IActionResult> UpdateProject(
-            [FromRoute] int projectId, [FromBody] ProjectRequestRequest projectRequest)
+            [FromRoute] int projectId, [FromBody] ProjectRequestReq projectRequest)
         {
             await projectService.UpdateProjectAsync(projectId, projectRequest);
             return Ok();

@@ -6,7 +6,7 @@ namespace ITrade.Services.Services
 {
     public class ProjectRequestService : IProjectRequestService
     {
-        public Task<int> CreateProjectRequestAsync(int senderId, ProjectRequestRequest projectRequest)
+        public Task<int> CreateProjectRequestAsync(int senderId, ProjectRequestReq projectRequest)
         {
             throw new NotImplementedException();
         }
