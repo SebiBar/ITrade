@@ -5,11 +5,11 @@ namespace ITrade.Services.Interfaces
 {
     public interface IProjectService
     {
-        Task<ICollection<ProjectResponse>> GetUserProjects();
+        Task<ICollection<ProjectResponse>> GetUserProjectsAsync();
         Task<ProjectResponse> GetProjectAsync(int projectId);
         Task<ICollection<ProjectResponse>> SearchProjectsAsync(string query);
         Task<int> CreateProjectAsync(ProjectReq projectRequest);
-        Task UpdateProjectAsync(int projectId, ProjectReq projectRequest);
+        Task UpdateProjectAsync(int projectId, ProjectUpdateReq projectRequest);
         Task SoftDeleteProjectAsync(int projectId);
     }
 }
