@@ -228,8 +228,6 @@ namespace ITrade.Services.Services
             context.ProjectTags.Remove(projectTag);
 
             await context.SaveChangesAsync();
-
-            return projectTag.Id;
         }
 
         private async Task<ICollection<ProjectResponse>> GetClientProjectsAsync()
