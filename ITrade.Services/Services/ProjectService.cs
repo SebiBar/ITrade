@@ -22,9 +22,9 @@ namespace ITrade.Services.Services
                 case UserRoleEnum.Specialist:
                     return await GetSpecialistProjectsAsync();
                 case UserRoleEnum.Admin:
-                    throw new UnauthorizedAccessException("Invalid user.");
+                    throw new InvalidOperationException("Invalid user.");
                 default:
-                    throw new UnauthorizedAccessException("Invalid user.");
+                    throw new InvalidOperationException("Invalid user.");
             }
         }
 
@@ -92,7 +92,7 @@ namespace ITrade.Services.Services
             ValidateProjectReq(projectRequest);
             if (currentUserService.UserRole != UserRoleEnum.Client)
             {
-                throw new UnauthorizedAccessException("Only clients can create projects.");
+                throw new InvalidOperationException("Only clients can create projects.");
             }
 
             var newProject = new Project
@@ -134,7 +134,7 @@ namespace ITrade.Services.Services
 
             if (project.OwnerId != currentUserService.UserId)
             {
-                throw new UnauthorizedAccessException("You do not have permission to delete this project.");
+                throw new InvalidOperationException("You do not have permission to delete this project.");
             }
 
             project.IsDeleted = true;
@@ -153,7 +153,7 @@ namespace ITrade.Services.Services
 
             if (project.OwnerId != currentUserService.UserId)
             {
-                throw new UnauthorizedAccessException("You do not have permission to update this project.");
+                throw new InvalidOperationException("You do not have permission to update this project.");
             }
 
             if (projectRequest.Name != null)
@@ -186,7 +186,7 @@ namespace ITrade.Services.Services
 
             if (project.OwnerId != currentUserService.UserId)
             {
-                throw new UnauthorizedAccessException("You do not have permission to modify this project.");
+                throw new InvalidOperationException("You do not have permission to modify this project.");
             }
 
             if (project.ProjectTags.Any(pt => pt.TagId == tagId.TagId))
@@ -217,7 +217,7 @@ namespace ITrade.Services.Services
 
             if (project.OwnerId != currentUserService.UserId)
             {
-                throw new UnauthorizedAccessException("You do not have permission to modify this project.");
+                throw new InvalidOperationException("You do not have permission to modify this project.");
             }
 
             var projectTag = project.ProjectTags

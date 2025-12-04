@@ -5,9 +5,9 @@ namespace ITrade.Services.Interfaces
 {
     public interface IProjectRequestService
     {
-        Task<ProjectRequestResponse> GetUserRequestsAsync(int senderId, int projectId);
-        Task<int> CreateProjectRequestAsync(int senderId, ProjectRequestReq projectRequest);
-        Task ResolveRequestAsync(int receiverId, int projectRequestId, bool accepted);
-        Task DeleteProjectRequestAsync(int senderId, int projectRequestId);
+        Task<UserRequestsResponse> GetUserRequestsAsync();
+        Task<int> CreateProjectRequestAsync(ProjectRequestReq projectRequest);
+        Task ResolveRequestAsync(int projectRequestId, bool accepted);
+        Task DeleteProjectRequestAsync(int projectRequestId);
     }
 }
