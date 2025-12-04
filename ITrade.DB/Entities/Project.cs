@@ -19,8 +19,8 @@ namespace ITrade.DB.Entities
         public ProjectStatusType ProjectStatusType { get; set; } = null!;
         public int OwnerId { get; set; }
         public User Owner { get; set; } = null!;
-        public int WorkerId { get; set; }
-        public User Worker { get; set; } = null!;
+        public int? WorkerId { get; set; } = null;
+        public User? Worker { get; set; } = null;
         public ICollection<ProjectTag> ProjectTags { get; set; } = [];
         public ICollection<ProjectRequest> ProjectRequests { get; set; } = [];
     }

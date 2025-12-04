@@ -100,11 +100,27 @@ namespace ITrade.Services.Services
                 Name = projectRequest.Name,
                 Description = projectRequest.Description,
                 Deadline = projectRequest.Deadline,
-                ProjectStatusTypeId = (int)projectRequest.Status,
                 OwnerId = currentUserService.UserId
             };
 
+            if (projectRequest.Status != null)
+            {
+                newProject.ProjectStatusTypeId = (int)projectRequest.Status;
+            }
+
             await context.Projects.AddAsync(newProject);
+            await context.SaveChangesAsync();
+
+            foreach (var tagId in projectRequest.TagIds)
+            {
+                var projectTag = new ProjectTag
+                {
+                    ProjectId = newProject.Id,
+                    TagId = tagId
+                };
+                newProject.ProjectTags.Add(projectTag);
+            }
+
             await context.SaveChangesAsync();
 
             return newProject.Id;
@@ -161,6 +177,61 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
+        public async Task<int> AddProjectTagAsync(int projectId, ProjectTagAddRequest tagId)
+        {
+            var project = await context.Projects
+                .Include(p => p.ProjectTags)
+                .FirstOrDefaultAsync(p => p.Id == projectId)
+                ?? throw new KeyNotFoundException("Project not found.");
+
+            if (project.OwnerId != currentUserService.UserId)
+            {
+                throw new UnauthorizedAccessException("You do not have permission to modify this project.");
+            }
+
+            if (project.ProjectTags.Any(pt => pt.TagId == tagId.TagId))
+            {
+                throw new ArgumentException("Tag already exists for this project.", nameof(tagId));
+            }
+
+            var projectTag = new ProjectTag
+            {
+                ProjectId = projectId,
+                TagId = tagId.TagId
+            };
+
+            project.UpdatedAt = DateTime.UtcNow;
+            await context.ProjectTags.AddAsync(projectTag);
+
+            await context.SaveChangesAsync();
+
+            return projectTag.Id;
+        }
+
+        public async Task DeleteProjectTagAsync(int projectId, int tagId)
+        {
+            var project = await context.Projects
+                .Include(p => p.ProjectTags)
+                .FirstOrDefaultAsync(p => p.Id == projectId)
+                ?? throw new KeyNotFoundException("Project not found.");
+
+            if (project.OwnerId != currentUserService.UserId)
+            {
+                throw new UnauthorizedAccessException("You do not have permission to modify this project.");
+            }
+
+            var projectTag = project.ProjectTags
+                .FirstOrDefault(pt => pt.TagId == tagId)
+                ?? throw new KeyNotFoundException("Tag not found for this project.");
+
+            project.UpdatedAt = DateTime.UtcNow;
+            context.ProjectTags.Remove(projectTag);
+
+            await context.SaveChangesAsync();
+
+            return projectTag.Id;
+        }
+
         private async Task<ICollection<ProjectResponse>> GetClientProjectsAsync()
         {
             var userId = currentUserService.UserId;
@@ -205,7 +276,7 @@ namespace ITrade.Services.Services
                     p.OwnerId,
                     p.Owner.FullName,
                     p.WorkerId,
-                    p.Worker.FullName,
+                    p.Worker != null ? p.Worker.FullName : null,
                     p.Deadline,
                     p.ProjectStatusTypeId,
                     p.ProjectStatusType.Name,
@@ -225,7 +296,7 @@ namespace ITrade.Services.Services
 
         private void ValidateProjectReq(ProjectReq projectRequest)
         {
-            if (!Enum.IsDefined(typeof(ProjectStatusTypeEnum), projectRequest.Status))
+            if (projectRequest.Status != null && !Enum.IsDefined(typeof(ProjectStatusTypeEnum), projectRequest.Status))
             {
                 throw new ArgumentException("Invalid project status type.", nameof(projectRequest));
             }

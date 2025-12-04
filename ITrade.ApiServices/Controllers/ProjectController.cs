@@ -22,7 +22,7 @@ namespace ITrade.ApiServices.Controllers
             return Ok(await projectService.GetProjectAsync(projectId));
         }
 
-        [HttpGet]
+        [HttpGet("search")]
         public async Task<IActionResult> SearchProjects([FromQuery] string query)
         {
             return Ok(await projectService.SearchProjectsAsync(query));
@@ -46,6 +46,21 @@ namespace ITrade.ApiServices.Controllers
         public async Task<IActionResult> SoftDeleteProject([FromRoute] int projectId)
         {
             await projectService.SoftDeleteProjectAsync(projectId);
+            return Ok();
+        }
+
+        [HttpPost("{projectId:int}/tags"), Authorize(Roles = "Client")]
+        public async Task<IActionResult> AddProjectTag(
+            [FromRoute] int projectId, [FromBody] ProjectTagAddRequest tagId)
+        {
+            return Ok(await projectService.AddProjectTagAsync(projectId, tagId));
+        }
+
+        [HttpDelete("{projectId:int}/tags/{tagId:int}"), Authorize(Roles = "Client")]
+        public async Task<IActionResult> DeleteProjectTag(
+            [FromRoute] int projectId, [FromRoute] int tagId)
+        {
+            await projectService.DeleteProjectTagAsync(projectId, tagId);
             return Ok();
         }
     }

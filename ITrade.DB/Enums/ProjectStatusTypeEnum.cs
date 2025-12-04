@@ -2,10 +2,10 @@
 {
     public enum ProjectStatusTypeEnum
     {
-        Hiring = 0,
-        InProgress = 1,
-        Completed = 2,
-        OnHold = 3,
-        Cancelled = 4
+        Hiring = 1,
+        InProgress = 2,
+        Completed = 3,
+        OnHold = 4,
+        Cancelled = 5
     }
 }

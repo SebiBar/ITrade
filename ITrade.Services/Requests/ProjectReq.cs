@@ -7,6 +7,7 @@ namespace ITrade.Services.Requests
         string Name,
         string? Description,
         DateTime Deadline,
-        ProjectStatusTypeEnum Status = ProjectStatusTypeEnum.Hiring
+        ProjectStatusTypeEnum? Status,
+        ICollection<int> TagIds
     );
 }
