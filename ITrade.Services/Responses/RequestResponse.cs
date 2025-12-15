@@ -1,6 +1,6 @@
 ﻿namespace ITrade.Services.Responses
 {
-    public record ProjectRequestResponse
+    public record RequestResponse
     (
         int Id,
         string? Message,

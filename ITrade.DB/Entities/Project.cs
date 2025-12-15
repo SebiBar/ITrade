@@ -22,6 +22,6 @@ namespace ITrade.DB.Entities
         public int? WorkerId { get; set; } = null;
         public User? Worker { get; set; } = null;
         public ICollection<ProjectTag> ProjectTags { get; set; } = [];
-        public ICollection<ProjectRequest> ProjectRequests { get; set; } = [];
+        public ICollection<Request> Requests { get; set; } = [];
     }
 }

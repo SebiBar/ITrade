@@ -1,6 +1,7 @@
 ﻿using ITrade.DB;
 using ITrade.DB.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace ITrade.ApiServices.Helpers
 {
@@ -24,6 +25,7 @@ namespace ITrade.ApiServices.Helpers
         public async Task SeedDatabase(Context database)
         {
             var seedRecord = await database.SeedStatuses.FirstOrDefaultAsync();
+
             if (seedRecord == null)
             {
                 seedRecord = new SeedStatus { ShouldSeedDatabase = false };
@@ -62,14 +64,14 @@ namespace ITrade.ApiServices.Helpers
 
         private static async Task SeedRequestTypes(Context database)
         {
-            if (!await database.ProjectRequestTypes.AnyAsync())
+            if (!await database.RequestTypes.AnyAsync())
             {
-                var requestTypes = new List<ProjectRequestType>
+                var requestTypes = new List<RequestType>
                 {
-                    new ProjectRequestType { Name = "Invitation" },
-                    new ProjectRequestType { Name = "Application" },
+                    new RequestType { Name = "Invitation" },
+                    new RequestType { Name = "Application" },
                 };
-                database.ProjectRequestTypes.AddRange(requestTypes);
+                database.RequestTypes.AddRange(requestTypes);
                 await database.SaveChangesAsync();
             }
         }

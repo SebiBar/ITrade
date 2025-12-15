@@ -87,7 +87,7 @@ namespace ITrade.Services.Services
                 .ToListAsync();
         }
 
-        public async Task<int> CreateProjectAsync(ProjectReq projectRequest)
+        public async Task<int> CreateProjectAsync(ProjectRequest projectRequest)
         {
             ValidateProjectReq(projectRequest);
             if (currentUserService.UserRole != UserRoleEnum.Client)
@@ -143,7 +143,7 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateProjectAsync(int projectId, ProjectUpdateReq projectRequest)
+        public async Task UpdateProjectAsync(int projectId, ProjectUpdateRequest projectRequest)
         {
             ValidateProjectUpdateReq(projectRequest);
 
@@ -292,7 +292,7 @@ namespace ITrade.Services.Services
                 .ToListAsync();
         }
 
-        private void ValidateProjectReq(ProjectReq projectRequest)
+        private void ValidateProjectReq(ProjectRequest projectRequest)
         {
             if (projectRequest.Status != null && !Enum.IsDefined(typeof(ProjectStatusTypeEnum), projectRequest.Status))
             {
@@ -316,7 +316,7 @@ namespace ITrade.Services.Services
             }
         }
 
-        private void ValidateProjectUpdateReq(ProjectUpdateReq projectRequest)
+        private void ValidateProjectUpdateReq(ProjectUpdateRequest projectRequest)
         {
             if (projectRequest.Status != null && !Enum.IsDefined(typeof(ProjectStatusTypeEnum), projectRequest.Status))
             {

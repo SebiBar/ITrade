@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace ITrade.DB.Entities
 {
-    public class ProjectRequestType
+    public class RequestType
     {
         [Key]
         public int Id { get; set; }

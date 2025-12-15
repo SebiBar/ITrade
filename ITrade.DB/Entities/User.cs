@@ -23,8 +23,8 @@ namespace ITrade.DB.Entities
         public ICollection<Token> Tokens { get; set; } = [];
         public ICollection<Project> OwnedProjects { get; set; } = [];
         public ICollection<Project> AssignedProjects { get; set; } = [];
-        public ICollection<ProjectRequest> SentRequests { get; set; } = [];
-        public ICollection<ProjectRequest> ReceivedRequests { get; set; } = [];
+        public ICollection<Request> SentRequests { get; set; } = [];
+        public ICollection<Request> ReceivedRequests { get; set; } = [];
         public ICollection<Notification> Notifications { get; set; } = [];
         public ICollection<UserProfileLink> UserProfileLinks { get; set; } = [];
         public ICollection<UserProfileTag> UserProfileTags { get; set; } = [];

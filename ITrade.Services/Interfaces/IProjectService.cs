@@ -8,8 +8,8 @@ namespace ITrade.Services.Interfaces
         Task<ICollection<ProjectResponse>> GetUserProjectsAsync();
         Task<ProjectResponse> GetProjectAsync(int projectId);
         Task<ICollection<ProjectResponse>> SearchProjectsAsync(string query);
-        Task<int> CreateProjectAsync(ProjectReq projectRequest);
-        Task UpdateProjectAsync(int projectId, ProjectUpdateReq projectRequest);
+        Task<int> CreateProjectAsync(ProjectRequest projectRequest);
+        Task UpdateProjectAsync(int projectId, ProjectUpdateRequest projectRequest);
         Task SoftDeleteProjectAsync(int projectId);
         Task<int> AddProjectTagAsync(int projectId, ProjectTagAddRequest tagId);
         Task DeleteProjectTagAsync(int projectId, int tagId);

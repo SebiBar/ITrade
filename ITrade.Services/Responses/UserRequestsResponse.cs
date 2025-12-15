@@ -2,7 +2,7 @@
 {
     public record UserRequestsResponse
     (
-        ICollection<ProjectRequestResponse> Invitations,
-        ICollection<ProjectRequestResponse> Applications
+        ICollection<RequestResponse> Invitations,
+        ICollection<RequestResponse> Applications
     );
 }

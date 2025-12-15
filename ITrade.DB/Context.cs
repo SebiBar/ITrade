@@ -17,8 +17,8 @@ namespace ITrade.DB
         public DbSet<UserReview> UserReviews { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectTag> ProjectTags { get; set; }
-        public DbSet<ProjectRequestType> ProjectRequestTypes { get; set; }
-        public DbSet<ProjectRequest> ProjectRequests { get; set; }
+        public DbSet<RequestType> RequestTypes { get; set; }
+        public DbSet<Request> Requests { get; set; }
         public DbSet<ProjectStatusType> ProjectStatusTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -39,15 +39,15 @@ namespace ITrade.DB
                 .WithMany(u => u.AssignedProjects)
                 .HasForeignKey(p => p.WorkerId);
 
-            //a project request has a sender and a receiver, users have sent and received requests
-            modelBuilder.Entity<ProjectRequest>()
-                .HasOne(pr => pr.Sender)
+            //a request has a sender and a receiver, users have sent and received requests
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.Sender)
                 .WithMany(u => u.SentRequests)
-                .HasForeignKey(pr => pr.SenderId);
-            modelBuilder.Entity<ProjectRequest>()
-                .HasOne(pr => pr.Receiver)
+                .HasForeignKey(r => r.SenderId);
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.Receiver)
                 .WithMany(u => u.ReceivedRequests)
-                .HasForeignKey(pr => pr.ReceiverId);
+                .HasForeignKey(r => r.ReceiverId);
 
             //a review has a reviewer and a reviewee, users have sent and received reviews
             modelBuilder.Entity<UserReview>()
@@ -61,7 +61,7 @@ namespace ITrade.DB
 
             //auto filter soft deleted Projects
             modelBuilder.Entity<Project>().HasQueryFilter(p => !p.IsDeleted);
-            modelBuilder.Entity<ProjectRequest>().HasQueryFilter(pr => !pr.Project.IsDeleted);
+            modelBuilder.Entity<Request>().HasQueryFilter(r => !r.Project.IsDeleted);
             modelBuilder.Entity<ProjectTag>().HasQueryFilter(pt => !pt.Project.IsDeleted);
 
         }

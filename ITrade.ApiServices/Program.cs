@@ -94,6 +94,7 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IRequestService, RequestService>();
 
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddSingleton<ITemplateService, TemplateService>();

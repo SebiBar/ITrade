@@ -2,7 +2,7 @@
 
 namespace ITrade.Services.Requests
 {
-    public record ProjectReq
+    public record ProjectRequest
     (
         string Name,
         string? Description,

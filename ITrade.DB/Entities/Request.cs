@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace ITrade.DB.Entities
 {
-    public class ProjectRequest
+    public class Request
     {
         [Key]
         public int Id { get; set; }
@@ -10,8 +10,8 @@ namespace ITrade.DB.Entities
         public string? Message { get; set; } = null;
         public bool? Accepted { get; set; } = null;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public int ProjectRequestTypeId { get; set; }
-        public ProjectRequestType ProjectRequestType { get; set; } = null!;
+        public int RequestTypeId { get; set; }
+        public RequestType RequestType { get; set; } = null!;
         public int SenderId { get; set; }
         public User Sender { get; set; } = null!;
         public int ReceiverId { get; set; }
