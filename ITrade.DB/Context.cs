@@ -14,7 +14,7 @@ namespace ITrade.DB
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserProfileLink> UserProfileLinks { get; set; }
         public DbSet<UserProfileTag> UserProfileTags { get; set; }
-        public DbSet<UserReview> UserReviews { get; set; }
+        public DbSet<Review> Reviews { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectTag> ProjectTags { get; set; }
         public DbSet<RequestType> RequestTypes { get; set; }
@@ -50,13 +50,13 @@ namespace ITrade.DB
                 .HasForeignKey(r => r.ReceiverId);
 
             //a review has a reviewer and a reviewee, users have sent and received reviews
-            modelBuilder.Entity<UserReview>()
+            modelBuilder.Entity<Review>()
                 .HasOne(ur => ur.Reviewer)
-                .WithMany(u => u.SentUserReviews)
+                .WithMany(u => u.SentReviews)
                 .HasForeignKey(ur => ur.ReviewerId);
-            modelBuilder.Entity<UserReview>()
+            modelBuilder.Entity<Review>()
                 .HasOne(ur => ur.Reviewee)
-                .WithMany(u => u.ReceivedUserReviews)
+                .WithMany(u => u.ReceivedReviews)
                 .HasForeignKey(ur => ur.RevieweeId);
 
             //auto filter soft deleted Projects

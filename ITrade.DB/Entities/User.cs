@@ -28,7 +28,7 @@ namespace ITrade.DB.Entities
         public ICollection<Notification> Notifications { get; set; } = [];
         public ICollection<UserProfileLink> UserProfileLinks { get; set; } = [];
         public ICollection<UserProfileTag> UserProfileTags { get; set; } = [];
-        public ICollection<UserReview> SentUserReviews { get; set; } = [];
-        public ICollection<UserReview> ReceivedUserReviews { get; set; } = [];
+        public ICollection<Review> SentReviews { get; set; } = [];
+        public ICollection<Review> ReceivedReviews { get; set; } = [];
     }
 }

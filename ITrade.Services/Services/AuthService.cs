@@ -160,5 +160,15 @@ namespace ITrade.Services.Services
                 htmlBody: html
             );
         }
+
+        public Task ForgotPasswordAsync(string email)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ChangePasswordAsync(string newPassword)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

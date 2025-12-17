@@ -2,7 +2,7 @@
 
 namespace ITrade.DB.Entities
 {
-    public class UserReview
+    public class Review
     {
         [Key]
         public int Id { get; set; }
