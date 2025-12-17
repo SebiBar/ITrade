@@ -28,7 +28,7 @@ namespace ITrade.Services.Services
             var user = new User
             {
                 Email = registerRequest.Email,
-                FullName = registerRequest.FullName,
+                Username = registerRequest.Username,
                 UserRoleId = (int)registerRequest.Role
             };
 
@@ -39,7 +39,7 @@ namespace ITrade.Services.Services
 
             var token = await tokenService.CreateVerifyEmailTokenAsync(user.Id);
 
-            await SendVerificationEmailAsync(user.Email, user.FullName, token);
+            await SendVerificationEmailAsync(user.Email, user.Username, token);
         }
 
         public async Task VerifyEmailAsync(string emailedToken)
@@ -95,7 +95,7 @@ namespace ITrade.Services.Services
             return new LoginResponse
             (
                 user.Id,
-                user.FullName,
+                user.Username,
                 user.Email,
                 jwt,
                 refresh
@@ -120,11 +120,11 @@ namespace ITrade.Services.Services
             if (req.Role == UserRoleEnum.Admin)
                 throw new ArgumentException("Cannot register as an admin.", nameof(req.Role));
 
-            if (string.IsNullOrWhiteSpace(req.FullName))
-                throw new ArgumentException("Full name is required.", nameof(req.FullName));
+            if (string.IsNullOrWhiteSpace(req.Username))
+                throw new ArgumentException("Username is required.", nameof(req.Username));
 
-            if (req.FullName.Length > 200)
-                throw new ArgumentException("Full name too long (max 200).", nameof(req.FullName));
+            if (req.Username.Length > 200)
+                throw new ArgumentException("Username too long (max 200).", nameof(req.Username));
 
             if (string.IsNullOrWhiteSpace(req.Password))
                 throw new ArgumentException("Password is required.", nameof(req.Password));
@@ -139,14 +139,14 @@ namespace ITrade.Services.Services
                 throw new InvalidOperationException("User with this email already exists.");
         }
 
-        private async Task SendVerificationEmailAsync(string toEmail, string fullName, string tokenValue)
+        private async Task SendVerificationEmailAsync(string toEmail, string username, string tokenValue)
         {
             var apiBase = urlSettings.Value.ApiBase.TrimEnd('/');
             var verifyLink = $"{apiBase}/auth/verify-email?token={tokenValue}";
 
             var model = new Dictionary<string, string>
             {
-                ["FullName"] = string.IsNullOrWhiteSpace(fullName) ? "there" : fullName,
+                ["FullName"] = string.IsNullOrWhiteSpace(username) ? "there" : username,
                 ["VerifyLink"] = verifyLink
             };
 

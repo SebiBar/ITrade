@@ -3,8 +3,8 @@
 namespace ITrade.Services.Requests
 {
     public record RegisterRequest
-        (
-        string FullName,
+    (
+        string Username,
         string Email,
         string Password,
         UserRoleEnum Role

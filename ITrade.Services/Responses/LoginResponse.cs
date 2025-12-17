@@ -3,7 +3,7 @@
     public record LoginResponse
     (
         int Id,
-        string FullName,
+        string Username,
         string Email,
         string Jwt,
         string Refresh

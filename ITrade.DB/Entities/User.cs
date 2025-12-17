@@ -11,7 +11,7 @@ namespace ITrade.DB.Entities
         [MaxLength(200)]
         public string PasswordHash { get; set; } = null!;
         [MaxLength(200)]
-        public string FullName { get; set; } = null!;
+        public string Username { get; set; } = null!;
         [MaxLength(200)]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
