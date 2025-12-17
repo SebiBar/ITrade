@@ -11,7 +11,7 @@ namespace ITrade.Services.Interfaces
         Task<int> CreateProjectAsync(ProjectRequest projectRequest);
         Task UpdateProjectAsync(int projectId, ProjectUpdateRequest projectRequest);
         Task SoftDeleteProjectAsync(int projectId);
-        Task<int> AddProjectTagAsync(int projectId, ProjectTagAddRequest tagId);
+        Task<int> AddProjectTagAsync(int projectId, int tagId);
         Task DeleteProjectTagAsync(int projectId, int tagId);
     }
 }

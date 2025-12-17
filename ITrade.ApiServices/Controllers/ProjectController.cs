@@ -51,7 +51,7 @@ namespace ITrade.ApiServices.Controllers
 
         [HttpPost("{projectId:int}/tags"), Authorize(Roles = "Client")]
         public async Task<IActionResult> AddProjectTag(
-            [FromRoute] int projectId, [FromBody] ProjectTagAddRequest tagId)
+            [FromRoute] int projectId, [FromBody] int tagId)
         {
             return Ok(await projectService.AddProjectTagAsync(projectId, tagId));
         }

@@ -177,7 +177,7 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<int> AddProjectTagAsync(int projectId, ProjectTagAddRequest tagId)
+        public async Task<int> AddProjectTagAsync(int projectId, int tagId)
         {
             var project = await context.Projects
                 .Include(p => p.ProjectTags)
@@ -189,7 +189,7 @@ namespace ITrade.Services.Services
                 throw new InvalidOperationException("You do not have permission to modify this project.");
             }
 
-            if (project.ProjectTags.Any(pt => pt.TagId == tagId.TagId))
+            if (project.ProjectTags.Any(pt => pt.TagId == tagId))
             {
                 throw new ArgumentException("Tag already exists for this project.", nameof(tagId));
             }
@@ -197,7 +197,7 @@ namespace ITrade.Services.Services
             var projectTag = new ProjectTag
             {
                 ProjectId = projectId,
-                TagId = tagId.TagId
+                TagId = tagId
             };
 
             project.UpdatedAt = DateTime.UtcNow;
