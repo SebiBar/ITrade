@@ -11,7 +11,8 @@ namespace ITrade.Services.Services
     public class RequestService
     (
         Context context,
-        ICurrentUserService currentUserService
+        ICurrentUserService currentUserService,
+        INotificationService notificationService
     ) : IRequestService
     {
         public async Task<int> CreateRequestAsync(RequestReq projectRequest)
@@ -36,6 +37,9 @@ namespace ITrade.Services.Services
                 RequestTypeId = (int)projectRequest.RequestType,
                 Message = projectRequest.Message,
             };
+
+            await notificationService.CreateNotificationAsync(
+                new NotificationRequest( "New request", "You received a new request", newRequest.ReceiverId));
 
             await context.Requests.AddAsync(newRequest);
             await context.SaveChangesAsync();
