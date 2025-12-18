@@ -7,7 +7,13 @@ namespace ITrade.ApiServices.Controllers
     [ApiController, Route("user"), Authorize]
     public class UserController(IUserService userService) : ControllerBase
     {
-        [HttpPut("username")]
+        [HttpGet]
+        public async Task<IActionResult> GetUser()
+        {
+            return Ok(await userService.GetUserAsync());
+        }
+
+        [HttpPut]
         public async Task<IActionResult> ChangeUsername([FromQuery] string newUsername)
         {
             await userService.ChangeUsernameAsync(newUsername);

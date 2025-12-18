@@ -1,6 +1,7 @@
 ﻿using ITrade.DB;
 using ITrade.DB.Entities;
 using ITrade.Services.Interfaces;
+using ITrade.Services.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace ITrade.Services.Services
@@ -11,6 +12,21 @@ namespace ITrade.Services.Services
         ICurrentUserService currentUserService
     ) : IUserService
     {
+        public async Task<UserResponse> GetUserAsync()
+        {
+            return await context.Users
+                .Where(u => u.Id == currentUserService.UserId)
+                .Select(u => new UserResponse
+                (
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.UserRole.Name,
+                    u.Notifications.Count(n => !n.IsRead)
+                )).FirstOrDefaultAsync()
+                ?? throw new Exception("User not found.");
+        }
+
         public async Task ChangeUsernameAsync(string newUsername)
         {
             var user = context.Users.Find(currentUserService.UserId)
