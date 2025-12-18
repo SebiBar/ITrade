@@ -17,7 +17,7 @@ namespace ITrade.ApiServices.Controllers
         [HttpPost("tags"), Authorize(Roles = "Specialist")]
         public async Task<IActionResult> AddProfileTag([FromQuery] int tagId)
         {
-            return Ok(await userService.CreateProfileTagAsync(tagId));
+            return Ok(await userService.AddProfileTagAsync(tagId));
         }
 
         [HttpDelete("tags/{tagId:int}"), Authorize(Roles = "Specialist")]

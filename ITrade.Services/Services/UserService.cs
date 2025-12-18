@@ -22,18 +22,6 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task AddProfileTagAsync(int tagId)
-        {
-            var newTag = new UserProfileTag
-            {
-                TagId = tagId,
-                UserId = currentUserService.UserId
-            };
-
-            await context.UserProfileTags.AddAsync(newTag);
-            await context.SaveChangesAsync();
-        }
-
         public async Task<int> CreateProfileLinkAsync(string url)
         {
             var newLink = new UserProfileLink
@@ -48,7 +36,7 @@ namespace ITrade.Services.Services
             return newLink.Id;
         }
 
-        public async Task<int> CreateProfileTagAsync(int tagId)
+        public async Task<int> AddProfileTagAsync(int tagId)
         {
             var newTag = new UserProfileTag
             {

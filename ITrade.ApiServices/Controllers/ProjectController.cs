@@ -60,7 +60,7 @@ namespace ITrade.ApiServices.Controllers
         public async Task<IActionResult> DeleteProjectTag(
             [FromRoute] int projectId, [FromRoute] int tagId)
         {
-            await projectService.DeleteProjectTagAsync(projectId, tagId);
+            await projectService.RemoveProjectTagAsync(projectId, tagId);
             return Ok();
         }
     }

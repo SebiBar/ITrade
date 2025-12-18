@@ -208,7 +208,7 @@ namespace ITrade.Services.Services
             return projectTag.Id;
         }
 
-        public async Task DeleteProjectTagAsync(int projectId, int tagId)
+        public async Task RemoveProjectTagAsync(int projectId, int tagId)
         {
             var project = await context.Projects
                 .Include(p => p.ProjectTags)
