@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace ITrade.ApiServices.Controllers
 {
     [ApiController, Route("user"), Authorize]
-    public class UserController(IUserService userService) : ControllerBase
+    public class UserController(
+        IUserService userService,
+        ITagService tagService) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> GetUser()
@@ -23,13 +25,13 @@ namespace ITrade.ApiServices.Controllers
         [HttpPost("tags"), Authorize(Roles = "Specialist")]
         public async Task<IActionResult> AddProfileTag([FromQuery] int tagId)
         {
-            return Ok(await userService.AddProfileTagAsync(tagId));
+            return Ok(await tagService.AddProfileTagAsync(tagId));
         }
 
         [HttpDelete("tags/{tagId:int}"), Authorize(Roles = "Specialist")]
         public async Task<IActionResult> RemoveProfileTag([FromRoute] int tagId)
         {
-            await userService.RemoveProfileTagAsync(tagId);
+            await tagService.RemoveProfileTagAsync(tagId);
             return Ok();
         }
 

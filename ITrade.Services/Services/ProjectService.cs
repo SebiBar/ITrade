@@ -177,59 +177,6 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<int> AddProjectTagAsync(int projectId, int tagId)
-        {
-            var project = await context.Projects
-                .Include(p => p.ProjectTags)
-                .FirstOrDefaultAsync(p => p.Id == projectId)
-                ?? throw new KeyNotFoundException("Project not found.");
-
-            if (project.OwnerId != currentUserService.UserId)
-            {
-                throw new InvalidOperationException("You do not have permission to modify this project.");
-            }
-
-            if (project.ProjectTags.Any(pt => pt.TagId == tagId))
-            {
-                throw new ArgumentException("Tag already exists for this project.", nameof(tagId));
-            }
-
-            var projectTag = new ProjectTag
-            {
-                ProjectId = projectId,
-                TagId = tagId
-            };
-
-            project.UpdatedAt = DateTime.UtcNow;
-            await context.ProjectTags.AddAsync(projectTag);
-
-            await context.SaveChangesAsync();
-
-            return projectTag.Id;
-        }
-
-        public async Task RemoveProjectTagAsync(int projectId, int tagId)
-        {
-            var project = await context.Projects
-                .Include(p => p.ProjectTags)
-                .FirstOrDefaultAsync(p => p.Id == projectId)
-                ?? throw new KeyNotFoundException("Project not found.");
-
-            if (project.OwnerId != currentUserService.UserId)
-            {
-                throw new InvalidOperationException("You do not have permission to modify this project.");
-            }
-
-            var projectTag = project.ProjectTags
-                .FirstOrDefault(pt => pt.TagId == tagId)
-                ?? throw new KeyNotFoundException("Tag not found for this project.");
-
-            project.UpdatedAt = DateTime.UtcNow;
-            context.ProjectTags.Remove(projectTag);
-
-            await context.SaveChangesAsync();
-        }
-
         private async Task<ICollection<ProjectResponse>> GetClientProjectsAsync()
         {
             var userId = currentUserService.UserId;

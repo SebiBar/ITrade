@@ -7,7 +7,8 @@ namespace ITrade.ApiServices.Controllers
 {
     [ApiController, Authorize, Route("projects")]
     public class ProjectController(
-        IProjectService projectService
+        IProjectService projectService,
+        ITagService tagService
         ) : ControllerBase
     {
         [HttpGet]
@@ -53,14 +54,14 @@ namespace ITrade.ApiServices.Controllers
         public async Task<IActionResult> AddProjectTag(
             [FromRoute] int projectId, [FromBody] int tagId)
         {
-            return Ok(await projectService.AddProjectTagAsync(projectId, tagId));
+            return Ok(await tagService.AddProjectTagAsync(projectId, tagId));
         }
 
         [HttpDelete("{projectId:int}/tags/{tagId:int}"), Authorize(Roles = "Client")]
         public async Task<IActionResult> DeleteProjectTag(
             [FromRoute] int projectId, [FromRoute] int tagId)
         {
-            await projectService.RemoveProjectTagAsync(projectId, tagId);
+            await tagService.RemoveProjectTagAsync(projectId, tagId);
             return Ok();
         }
     }

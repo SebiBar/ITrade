@@ -52,20 +52,6 @@ namespace ITrade.Services.Services
             return newLink.Id;
         }
 
-        public async Task<int> AddProfileTagAsync(int tagId)
-        {
-            var newTag = new UserProfileTag
-            {
-                TagId = tagId,
-                UserId = currentUserService.UserId
-            };
-
-            await context.UserProfileTags.AddAsync(newTag);
-            await context.SaveChangesAsync();
-
-            return newTag.Id;
-        }
-
         public async Task RemoveProfileLinkAsync(int profileLinkId)
         {
             var profileLink = await context.UserProfileLinks
@@ -74,17 +60,6 @@ namespace ITrade.Services.Services
                 ?? throw new Exception("Profile link not found.");
 
             context.UserProfileLinks.Remove(profileLink);
-            await context.SaveChangesAsync();
-        }
-
-        public async Task RemoveProfileTagAsync(int tagId)
-        {
-            var profileTag = await context.UserProfileTags
-                .Where(upt => upt.TagId == tagId && upt.UserId == currentUserService.UserId)
-                .FirstOrDefaultAsync()
-                ?? throw new Exception("Profile tag not found.");
-
-            context.UserProfileTags.Remove(profileTag);
             await context.SaveChangesAsync();
         }
     }
