@@ -46,7 +46,6 @@ namespace ITrade.Services.Services
                     p.ProjectTags
                         .Select(pt => new ProjectTagResponse(
                             pt.Id,
-                            pt.Tag.Id,
                             pt.Tag.Name,
                             pt.ProjectId
                         ))
@@ -76,7 +75,6 @@ namespace ITrade.Services.Services
                     p.ProjectTags
                         .Select(pt => new ProjectTagResponse(
                             pt.Id,
-                            pt.Tag.Id,
                             pt.Tag.Name,
                             pt.ProjectId
                         ))
@@ -197,7 +195,6 @@ namespace ITrade.Services.Services
                     p.ProjectTags
                         .Select(pt => new ProjectTagResponse(
                             pt.Id,
-                            pt.Tag.Id,
                             pt.Tag.Name,
                             pt.ProjectId
                         ))
@@ -228,7 +225,6 @@ namespace ITrade.Services.Services
                     p.ProjectTags
                         .Select(pt => new ProjectTagResponse(
                             pt.Id,
-                            pt.Tag.Id,
                             pt.Tag.Name,
                             pt.ProjectId
                         ))

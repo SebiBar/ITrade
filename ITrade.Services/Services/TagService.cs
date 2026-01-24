@@ -55,10 +55,22 @@ namespace ITrade.Services.Services
 
         public async Task<int> AddProfileTagAsync(int tagId)
         {
+            if (currentUserService.UserRole != UserRoleEnum.Specialist)
+            {
+                throw new ArgumentException("Only specialists can add profile tags.");
+            }
+
+            var tagName = await context.Tags
+                .Where(t => t.Id == tagId)
+                .Select(t => t.Name)
+                .FirstOrDefaultAsync()
+                ?? throw new ArgumentException("Invalid tagId", nameof(tagId));
+
             var newTag = new UserProfileTag
             {
                 TagId = tagId,
-                UserId = currentUserService.UserId
+                UserId = currentUserService.UserId,
+                TagName = tagName
             };
 
             await context.UserProfileTags.AddAsync(newTag);
@@ -80,6 +92,11 @@ namespace ITrade.Services.Services
 
         public async Task<int> AddProjectTagAsync(int projectId, int tagId)
         {
+            if (currentUserService.UserRole != UserRoleEnum.Client)
+            {
+                throw new ArgumentException("Only clients can add project tags.");
+            }
+
             var project = await context.Projects
                 .Include(p => p.ProjectTags)
                 .FirstOrDefaultAsync(p => p.Id == projectId)

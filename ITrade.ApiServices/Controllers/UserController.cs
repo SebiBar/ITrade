@@ -9,10 +9,16 @@ namespace ITrade.ApiServices.Controllers
         IUserService userService,
         ITagService tagService) : ControllerBase
     {
-        [HttpGet]
-        public async Task<IActionResult> GetUserProfile()
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetUserProfile([FromRoute] int id)
         {
-            return Ok(await userService.GetUserProfileAsync());
+            return Ok(await userService.GetUserProfileAsync(id));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchUser([FromQuery] string query)
+        {
+            return Ok(await userService.SearchUsersAsync(query));
         }
 
         [HttpPut]

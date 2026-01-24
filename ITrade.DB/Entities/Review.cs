@@ -16,5 +16,6 @@ namespace ITrade.DB.Entities
         public User Reviewer { get; set; } = null!;
         public int RevieweeId { get; set; }
         public User Reviewee { get; set; } = null!;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

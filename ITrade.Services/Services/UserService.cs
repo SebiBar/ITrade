@@ -1,5 +1,6 @@
 ﻿using ITrade.DB;
 using ITrade.DB.Entities;
+using ITrade.DB.Enums;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Responses;
 using Microsoft.EntityFrameworkCore;
@@ -15,20 +16,62 @@ namespace ITrade.Services.Services
         public async Task<UserProfileResponse> GetUserProfileAsync(int userId)
         {
             return await context.Users
-                .Where(u => u.Id == currentUserService.UserId)
+                .Where(u => u.Id == userId)
+                .Select(u => new UserProfileResponse
+                (
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.UserRole.Name,
+                    u.UserProfileLinks.Select(pl => new UserProfileLinkResponse(pl.Id, pl.UserId, pl.Url)).ToList(),
+                    u.UserProfileTags.Select(pt => new UserProfileTagResponse(pt.Id, pt.UserId, pt.Tag.Name)).ToList(),
+                    u.AssignedProjects.Where(p => !p.IsDeleted).Select(p => new ProjectResponse
+                    (
+                        p.Id,
+                        p.Name,
+                        p.Description,
+                        p.OwnerId,
+                        p.Owner.Username,
+                        p.WorkerId,
+                        p.Worker != null ? p.Worker.Username : null,
+                        p.Deadline,
+                        p.ProjectStatusTypeId,
+                        p.ProjectStatusType.Name,
+                        p.ProjectTags.Select(t => new ProjectTagResponse(t.Id, t.Tag.Name, t.ProjectId)).ToList(),
+                        p.CreatedAt,
+                        p.UpdatedAt
+                    )).ToList(),
+                    u.ReceivedReviews.Select(r => new ReviewResponse
+                    (
+                        r.Id,
+                        r.ReviewerId,
+                        r.Reviewer.Username,
+                        r.RevieweeId,
+                        r.Reviewee.Username,
+                        r.Rating,
+                        r.Title,
+                        r.Comment,
+                        r.CreatedAt
+                    )).ToList()
+                ))
+                .AsSplitQuery()
+                .FirstOrDefaultAsync()
+                ?? throw new Exception("User not found.");
+        }
+
+        public async Task<ICollection<UserResponse>> SearchUsersAsync(string userName)
+        {
+            return await context.Users
+                .Where(u => u.Username.Contains(userName))
+                .Where(u => u.UserRoleId != (int)UserRoleEnum.Admin)
                 .Select(u => new UserResponse
                 (
                     u.Id,
                     u.Username,
                     u.Email,
                     u.UserRole.Name
-                )).FirstOrDefaultAsync()
-                ?? throw new Exception("User not found.");
-        }
-
-        public Task<ICollection<UserResponse>> SearchUsersAsync(string userName)
-        {
-            throw new NotImplementedException();
+                ))
+                .ToListAsync();
         }
 
         public async Task ChangeUsernameAsync(string newUsername)
