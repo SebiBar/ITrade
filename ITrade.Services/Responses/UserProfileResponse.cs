@@ -1,6 +1,6 @@
 ﻿namespace ITrade.Services.Responses
 {
-    public record UserResponse
+    public record UserProfileResponse
     (
         int Id,
         string Username,

@@ -12,7 +12,7 @@ namespace ITrade.Services.Services
         ICurrentUserService currentUserService
     ) : IUserService
     {
-        public async Task<UserResponse> GetUserAsync()
+        public async Task<UserProfileResponse> GetUserProfileAsync(int userId)
         {
             return await context.Users
                 .Where(u => u.Id == currentUserService.UserId)
@@ -21,10 +21,14 @@ namespace ITrade.Services.Services
                     u.Id,
                     u.Username,
                     u.Email,
-                    u.UserRole.Name,
-                    u.Notifications.Count(n => !n.IsRead)
+                    u.UserRole.Name
                 )).FirstOrDefaultAsync()
                 ?? throw new Exception("User not found.");
+        }
+
+        public Task<ICollection<UserResponse>> SearchUsersAsync(string userName)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task ChangeUsernameAsync(string newUsername)

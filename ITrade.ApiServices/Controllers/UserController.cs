@@ -10,9 +10,9 @@ namespace ITrade.ApiServices.Controllers
         ITagService tagService) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetUser()
+        public async Task<IActionResult> GetUserProfile()
         {
-            return Ok(await userService.GetUserAsync());
+            return Ok(await userService.GetUserProfileAsync());
         }
 
         [HttpPut]
