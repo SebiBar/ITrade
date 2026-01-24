@@ -23,9 +23,19 @@ namespace ITrade.Services.Services
                     u.Username,
                     u.Email,
                     u.UserRole.Name,
-                    u.UserProfileLinks.Select(pl => new UserProfileLinkResponse(pl.Id, pl.UserId, pl.Url)).ToList(),
-                    u.UserProfileTags.Select(pt => new UserProfileTagResponse(pt.Id, pt.UserId, pt.Tag.Name)).ToList(),
-                    u.AssignedProjects.Where(p => !p.IsDeleted).Select(p => new ProjectResponse
+                    u.UserProfileLinks
+                        .Select(pl => new UserProfileLinkResponse(pl.Id, pl.UserId, pl.Url))
+                        .ToList(),
+                    u.UserProfileTags
+                        .Select(pt => new UserProfileTagResponse(pt.Id, pt.UserId, pt.Tag.Name))
+                        .ToList(),
+                    (
+                        u.UserRoleId == (int)UserRoleEnum.Client
+                            ? u.OwnedProjects
+                            : u.AssignedProjects
+                    )
+                    .Where(p => !p.IsDeleted)
+                    .Select(p => new ProjectResponse
                     (
                         p.Id,
                         p.Name,
@@ -37,27 +47,33 @@ namespace ITrade.Services.Services
                         p.Deadline,
                         p.ProjectStatusTypeId,
                         p.ProjectStatusType.Name,
-                        p.ProjectTags.Select(t => new ProjectTagResponse(t.Id, t.Tag.Name, t.ProjectId)).ToList(),
+                        p.ProjectTags
+                            .Select(t => new ProjectTagResponse(t.Id, t.Tag.Name, t.ProjectId))
+                            .ToList(),
                         p.CreatedAt,
                         p.UpdatedAt
-                    )).ToList(),
-                    u.ReceivedReviews.Select(r => new ReviewResponse
-                    (
-                        r.Id,
-                        r.ReviewerId,
-                        r.Reviewer.Username,
-                        r.RevieweeId,
-                        r.Reviewee.Username,
-                        r.Rating,
-                        r.Title,
-                        r.Comment,
-                        r.CreatedAt
-                    )).ToList()
+                    ))
+                    .ToList(),
+                    u.ReceivedReviews
+                        .Select(r => new ReviewResponse
+                        (
+                            r.Id,
+                            r.ReviewerId,
+                            r.Reviewer.Username,
+                            r.RevieweeId,
+                            r.Reviewee.Username,
+                            r.Rating,
+                            r.Title,
+                            r.Comment,
+                            r.CreatedAt
+                        ))
+                        .ToList()
                 ))
                 .AsSplitQuery()
                 .FirstOrDefaultAsync()
                 ?? throw new Exception("User not found.");
         }
+
 
         public async Task<ICollection<UserResponse>> SearchUsersAsync(string userName)
         {
