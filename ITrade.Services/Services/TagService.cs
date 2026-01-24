@@ -1,5 +1,6 @@
 ﻿using ITrade.DB;
 using ITrade.DB.Entities;
+using ITrade.DB.Enums;
 using ITrade.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,48 @@ namespace ITrade.Services.Services
         ICurrentUserService currentUserService
         ) : ITagService
     {
+        public async Task<int> CreateTagAsync(string tagName)
+        {
+            if (currentUserService.UserRole != UserRoleEnum.Admin)
+            {
+                throw new ArgumentException("Cannot create tags.");
+            }
+
+            if (string.IsNullOrWhiteSpace(tagName) || tagName.Length > 50)
+            {
+                throw new ArgumentException("Invalid name.", nameof(tagName));
+            }
+
+            var newTag = new Tag
+            {
+                Name = tagName
+            };
+
+            context.Tags.Add(newTag);
+            await context.SaveChangesAsync();
+
+            return newTag.Id;
+        }
+
+        public async Task DeleteTagAsync(int tagId)
+        {
+            if (currentUserService.UserRole != UserRoleEnum.Admin)
+            {
+                throw new ArgumentException("Cannot delete tags.");
+            }
+
+            var tag = await context.Tags.FirstOrDefaultAsync(t => t.Id == tagId)
+                ?? throw new ArgumentException("Invalid tagId");
+
+            context.Tags.Remove(tag);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<ICollection<Tag>> SearchTagsAsync(string tagName)
+        {
+            return await context.Tags.Where(t => t.Name.Contains(tagName)).ToListAsync();
+        }
+
         public async Task<int> AddProfileTagAsync(int tagId)
         {
             var newTag = new UserProfileTag

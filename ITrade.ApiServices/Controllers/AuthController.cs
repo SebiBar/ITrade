@@ -1,5 +1,6 @@
 ﻿using ITrade.Services.Interfaces;
 using ITrade.Services.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
@@ -38,7 +39,7 @@ namespace ITrade.ApiServices.Controllers
             return Ok();
         }
 
-        [HttpPost("change-password")]
+        [HttpPost("change-password"), Authorize]
         public async Task<IActionResult> ChangePassword([FromQuery] string newPassword)
         {
             await authService.ChangePasswordAsync(newPassword);
