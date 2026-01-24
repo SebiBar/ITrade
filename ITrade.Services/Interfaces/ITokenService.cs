@@ -8,6 +8,7 @@ namespace ITrade.Services.Interfaces
         string CreateJwt(int userId, string userRole);
         Task<string> CreateRefreshTokenAsync(int userId);
         Task<string> CreateVerifyEmailTokenAsync(int userId);
+        Task<string> CreateForgotPasswordTokenAsync(int userId);
         string HashTokenString(string tokenString);
         Task<RefreshTokensResponse> RefreshTokensAsync(string refreshToken);
     }

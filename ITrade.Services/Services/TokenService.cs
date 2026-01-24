@@ -82,6 +82,24 @@ namespace ITrade.Services.Services
             return tokenString;
         }
 
+        public async Task<string> CreateForgotPasswordTokenAsync(int userId)
+        {
+            var tokenString = GenerateTokenString();
+
+            var forgotPasswordToken = new Token
+            {
+                TokenStringHash = HashTokenString(tokenString),
+                UserId = userId,
+                TokenTypeId = (int)TokenTypeEnum.ForgotPassword,
+                ExpirationDate = DateTime.UtcNow.AddHours(tokenSettings.Value.ForgotPasswordExpiresInHours),
+            };
+
+            await context.Tokens.AddAsync(forgotPasswordToken);
+            await context.SaveChangesAsync();
+
+            return tokenString;
+        }
+
         public string HashTokenString(string tokenString)
         {
             var bytes = Encoding.UTF8.GetBytes(tokenString);

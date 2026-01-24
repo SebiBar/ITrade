@@ -17,6 +17,7 @@ namespace ITrade.Services.Services
         ITokenService tokenService,
         IEmailService emailService,
         ITemplateService templateService,
+        ICurrentUserService currentUserService,
         IOptions<TemplateSettings> templateSettings,
         IOptions<UrlSettings> urlSettings
     ) : IAuthService
@@ -53,6 +54,7 @@ namespace ITrade.Services.Services
 
             var token = await context.Tokens
                 .Where(t => t.TokenStringHash == emailedHashed)
+                .Where(t => t.TokenTypeId == (int)TokenTypeEnum.VerifyEmail)
                 .Include(t => t.User)
                 .FirstOrDefaultAsync()
                 ?? throw new ArgumentException("Invalid token.", nameof(emailedToken));
@@ -100,6 +102,59 @@ namespace ITrade.Services.Services
                 jwt,
                 refresh
             );
+        }
+
+        public async Task ForgotPasswordAsync(string email)
+        {
+            ValidateEmail(email);
+
+            var user = await context.Users
+                .FirstOrDefaultAsync(u => u.Email == email)
+                ?? throw new ArgumentException("User with this email does not exist.", nameof(email));
+
+            var token = await tokenService.CreateForgotPasswordTokenAsync(user.Id);
+
+            await SendForgotPasswordEmailAsync(user.Email, user.Username, token);
+        }
+
+        public async Task ResolveForgotPasswordAsync(ResolveForgotPasswordRequest resolveForgotPasswordRequest)
+        {
+            ValidatePassword(resolveForgotPasswordRequest.NewPassword);
+
+            var emailedHashed = tokenService.HashTokenString(resolveForgotPasswordRequest.EmailedToken);
+
+            var token = await context.Tokens
+                .Where(t => t.TokenStringHash == emailedHashed)
+                .Where(t => t.TokenTypeId == (int)TokenTypeEnum.ForgotPassword)
+                .Include(t => t.User)
+                .FirstOrDefaultAsync()
+                ?? throw new ArgumentException("Invalid token.", nameof(resolveForgotPasswordRequest.EmailedToken));
+
+            if (token.ExpirationDate < DateTime.UtcNow)
+            {
+                throw new ArgumentException("Invalid token.", nameof(resolveForgotPasswordRequest.EmailedToken));
+            }
+
+            var user = token.User;
+            user.PasswordHash = hasher.HashPassword(user, resolveForgotPasswordRequest.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            context.Tokens.Remove(token);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task ChangePasswordAsync(string newPassword)
+        {
+            ValidatePassword(newPassword);
+
+            var user = await context.Users
+                .FirstOrDefaultAsync(u => u.Id == currentUserService.UserId)
+                ?? throw new ArgumentException("User not found.", nameof(newPassword));
+
+            user.PasswordHash = hasher.HashPassword(user, newPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await context.SaveChangesAsync();
         }
 
         private void ValidateLoginRequest(LoginRequest req)
@@ -161,14 +216,40 @@ namespace ITrade.Services.Services
             );
         }
 
-        public Task ForgotPasswordAsync(string email)
+        private async Task SendForgotPasswordEmailAsync(string toEmail, string username, string tokenValue)
         {
-            throw new NotImplementedException();
+            var apiBase = urlSettings.Value.ApiBase.TrimEnd('/');
+            var changePasswordLink = $"{apiBase}/auth/forgot-password?token={tokenValue}";
+
+            var model = new Dictionary<string, string>
+            {
+                ["FullName"] = string.IsNullOrWhiteSpace(username) ? "there" : username,
+                ["ChangePasswordLink"] = changePasswordLink
+            };
+
+            var html = await templateService.RenderAsync(templateSettings.Value.Email.ResetHtml, model);
+            var text = await templateService.RenderAsync(templateSettings.Value.Email.ResetText, model);
+
+            await emailService.SendEmailAsync(
+                toEmail: toEmail,
+                title: "Proceed to change your password",
+                textBody: text,
+                htmlBody: html
+            );
         }
 
-        public Task ChangePasswordAsync(string newPassword)
+        private void ValidateEmail(string email)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(email))
+                throw new ArgumentException("Email is required.", nameof(email));
+            if (!System.Net.Mail.MailAddress.TryCreate(email, out _))
+                throw new ArgumentException("Email format is invalid.", nameof(email));
+        }
+
+        private void ValidatePassword(string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword))
+                throw new ArgumentException("Password is required.", nameof(newPassword));
         }
     }
 }
