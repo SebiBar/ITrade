@@ -9,7 +9,7 @@ namespace ITrade.Services.Services
         ICurrentUserService currentUserService
     ) : IMatchingService
     {
-        public Task<ICollection<ProjectMatchedResponse>> RecommandSpecialistProjects()
+        public Task<ICollection<ProjectMatchedResponse>> RecommandProjectsForSpecialist()
         {
             throw new NotImplementedException();
         }

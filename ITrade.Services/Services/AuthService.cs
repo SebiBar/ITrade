@@ -96,9 +96,7 @@ namespace ITrade.Services.Services
 
             return new LoginResponse
             (
-                user.Id,
-                user.Username,
-                user.Email,
+                new UserResponse(user.Id, user.Username, user.UserRole.Name),
                 jwt,
                 refresh
             );

@@ -13,21 +13,6 @@ namespace ITrade.Services.Services
         ICurrentUserService currentUserService
     ) : IProjectService
     {
-        public async Task<ICollection<ProjectResponse>> GetDashboardProjectsAsync()
-        {
-            switch (currentUserService.UserRole)
-            {
-                case UserRoleEnum.Client:
-                    return await GetClientProjectsAsync();
-                case UserRoleEnum.Specialist:
-                    return await GetSpecialistProjectsAsync();
-                case UserRoleEnum.Admin:
-                    throw new InvalidOperationException("Invalid user.");
-                default:
-                    throw new InvalidOperationException("Invalid user.");
-            }
-        }
-
         public async Task<ProjectResponse> GetProjectAsync(int projectId)
         {
             return await context.Projects
@@ -175,65 +160,6 @@ namespace ITrade.Services.Services
 
             project.UpdatedAt = DateTime.UtcNow;
             await context.SaveChangesAsync();
-        }
-
-        private async Task<ICollection<ProjectResponse>> GetClientProjectsAsync()
-        {
-            var userId = currentUserService.UserId;
-
-            return await context.Projects
-                .Where(p => p.OwnerId == userId)
-                .Select(p => new ProjectResponse(
-                    p.Id,
-                    p.Name,
-                    p.Description,
-                    p.OwnerId,
-                    p.Owner.Username,
-                    p.WorkerId,
-                    p.Worker != null ? p.Worker.Username : null,
-                    p.Deadline,
-                    p.ProjectStatusTypeId,
-                    p.ProjectStatusType.Name,
-                    p.ProjectTags
-                        .Select(pt => new ProjectTagResponse(
-                            pt.Id,
-                            pt.Tag.Name
-                        ))
-                        .ToList(),
-                    p.CreatedAt,
-                    p.UpdatedAt
-                ))
-                .ToListAsync();
-        }
-
-        //unused
-        private async Task<ICollection<ProjectResponse>> GetSpecialistProjectsAsync()
-        {
-            var userId = currentUserService.UserId;
-
-            return await context.Projects
-                    .Where(p => p.WorkerId == userId)
-                    .Select(p => new ProjectResponse(
-                        p.Id,
-                        p.Name,
-                        p.Description,
-                        p.OwnerId,
-                        p.Owner.Username,
-                        p.WorkerId,
-                        p.Worker != null ? p.Worker.Username : null,
-                        p.Deadline,
-                        p.ProjectStatusTypeId,
-                        p.ProjectStatusType.Name,
-                        p.ProjectTags
-                            .Select(pt => new ProjectTagResponse(
-                                pt.Id,
-                                pt.Tag.Name
-                            ))
-                            .ToList(),
-                        p.CreatedAt,
-                        p.UpdatedAt
-                    ))
-                    .ToListAsync();
         }
 
         private void ValidateProjectReq(ProjectRequest projectRequest)

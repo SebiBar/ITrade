@@ -11,12 +11,6 @@ namespace ITrade.ApiServices.Controllers
         ITagService tagService
         ) : ControllerBase
     {
-        [HttpGet]
-        public async Task<IActionResult> GetDashboardProjects()
-        {
-            return Ok(await projectService.GetDashboardProjectsAsync());
-        }
-
         [HttpGet("{projectId:int}")]
         public async Task<IActionResult> GetProject([FromRoute] int projectId)
         {

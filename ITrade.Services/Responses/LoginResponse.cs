@@ -2,9 +2,7 @@
 {
     public record LoginResponse
     (
-        int Id,
-        string Username,
-        string Email,
+        UserResponse User,
         string Jwt,
         string Refresh
     );
