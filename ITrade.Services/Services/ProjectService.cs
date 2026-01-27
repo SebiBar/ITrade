@@ -81,9 +81,9 @@ namespace ITrade.Services.Services
                         p.UpdatedAt
                     ))
                     .ToListAsync();
-            }
+        }
 
-            public async Task<int> CreateProjectAsync(ProjectRequest projectRequest)
+        public async Task<int> CreateProjectAsync(ProjectRequest projectRequest)
         {
             ValidateProjectReq(projectRequest);
             if (currentUserService.UserRole != UserRoleEnum.Client)
@@ -195,18 +195,18 @@ namespace ITrade.Services.Services
                     p.ProjectStatusTypeId,
                     p.ProjectStatusType.Name,
                     p.ProjectTags
-                                    .Select(pt => new ProjectTagResponse(
-                                        pt.Id,
-                                        pt.Tag.Name
-                                    ))
-                                    .ToList(),
-                                p.CreatedAt,
-                                p.UpdatedAt
-                            ))
-                            .ToListAsync();
-                    }
+                        .Select(pt => new ProjectTagResponse(
+                            pt.Id,
+                            pt.Tag.Name
+                        ))
+                        .ToList(),
+                    p.CreatedAt,
+                    p.UpdatedAt
+                ))
+                .ToListAsync();
+        }
 
-                    //unused
+        //unused
         private async Task<ICollection<ProjectResponse>> GetSpecialistProjectsAsync()
         {
             var userId = currentUserService.UserId;
@@ -234,9 +234,9 @@ namespace ITrade.Services.Services
                         p.UpdatedAt
                     ))
                     .ToListAsync();
-            }
+        }
 
-            private void ValidateProjectReq(ProjectRequest projectRequest)
+        private void ValidateProjectReq(ProjectRequest projectRequest)
         {
             if (projectRequest.Status != null && !Enum.IsDefined(typeof(ProjectStatusTypeEnum), projectRequest.Status))
             {

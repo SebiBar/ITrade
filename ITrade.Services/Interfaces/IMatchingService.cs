@@ -4,7 +4,7 @@ namespace ITrade.Services.Interfaces
 {
     public interface IMatchingService
     {
-        Task<ICollection<MatchedProjectResponse>> RecommandSpecialistProjects();
-        Task<ICollection<MatchedUserResponse>> RecommandSpecialistsForProject(int projectId);
+        Task<ICollection<ProjectMatchedResponse>> RecommandSpecialistProjects();
+        Task<ICollection<UserMatchedResponse>> RecommandSpecialistsForProject(int projectId);
     }
 }
