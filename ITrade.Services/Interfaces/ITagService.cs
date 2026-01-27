@@ -7,6 +7,7 @@ namespace ITrade.Services.Interfaces
         Task<int> CreateTagAsync(string tagName);
         Task DeleteTagAsync(int tagId);
         Task<ICollection<Tag>> SearchTagsAsync(string tagName);
+        Task<ICollection<Tag>> GetAllTagsAsync();
         Task<int> AddProjectTagAsync(int projectId, int tagId);
         Task RemoveProjectTagAsync(int projectId, int tagId);
         Task<int> AddProfileTagAsync(int tagId);

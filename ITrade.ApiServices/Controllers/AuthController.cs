@@ -33,7 +33,8 @@ namespace ITrade.ApiServices.Controllers
         }
 
         [HttpPost("resolve-forgot-password")]
-        public async Task<IActionResult> ResolveForgotPassword([FromBody] ResolveForgotPasswordRequest resolveForgotPasswordRequest)
+        public async Task<IActionResult> ResolveForgotPassword(
+            [FromBody] ResolveForgotPasswordRequest resolveForgotPasswordRequest)
         {
             await authService.ResolveForgotPasswordAsync(resolveForgotPasswordRequest);
             return Ok();

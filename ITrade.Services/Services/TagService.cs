@@ -147,5 +147,10 @@ namespace ITrade.Services.Services
 
             await context.SaveChangesAsync();
         }
+
+        public async Task<ICollection<Tag>> GetAllTagsAsync()
+        {
+            return await context.Tags.ToListAsync();
+        }
     }
 }
