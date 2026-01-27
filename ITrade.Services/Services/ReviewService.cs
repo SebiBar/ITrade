@@ -2,6 +2,7 @@
 using ITrade.DB.Entities;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Requests;
+using ITrade.Services.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace ITrade.Services.Services
@@ -11,6 +12,25 @@ namespace ITrade.Services.Services
         ICurrentUserService currentUserService
     ) : IReviewService
     {
+        public async Task<ICollection<ReviewResponse>> GetSentReviewsAsync()
+        {
+            return await context.Reviews
+                .Where(r => r.ReviewerId == currentUserService.UserId)
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new ReviewResponse
+                (
+                    r.Id,
+                    r.ReviewerId,
+                    r.Reviewer.Username,
+                    r.RevieweeId,
+                    r.Reviewee.Username,
+                    r.Rating,
+                    r.Title,
+                    r.Comment,
+                    r.CreatedAt
+                )).ToListAsync();
+        }
+
         public async Task<int> CreateReviewAsync(ReviewCreateRequest createReviewRequest)
         {
             ValidateReviewCreateRequest(createReviewRequest);

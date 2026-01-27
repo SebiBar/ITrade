@@ -16,18 +16,15 @@ namespace ITrade.Services.Services
         public async Task<UserProfileResponse> GetUserProfileAsync(int userId)
         {
             return await context.Users
-                .Where(u => u.Id == userId)
-                .Select(u => new UserProfileResponse
-                (
-                    u.Id,
-                    u.Username,
-                    u.Email,
-                    u.UserRole.Name,
-                    u.UserProfileLinks
-                        .Select(pl => new UserProfileLinkResponse(pl.Id, pl.UserId, pl.Url))
-                        .ToList(),
+            .Where(u => u.Id == userId)
+            .Select(u => new UserProfileResponse
+            (
+                new UserResponse(u.Id, u.Username, u.UserRole.Name),
+                u.UserProfileLinks
+                    .Select(pl => new UserProfileLinkResponse(pl.Id, pl.UserId, pl.Url))
+                    .ToList(),
                     u.UserProfileTags
-                        .Select(pt => new UserProfileTagResponse(pt.Id, pt.UserId, pt.Tag.Name))
+                        .Select(pt => new UserProfileTagResponse(pt.Id, pt.Tag.Name))
                         .ToList(),
                     (
                         u.UserRoleId == (int)UserRoleEnum.Client
@@ -48,7 +45,7 @@ namespace ITrade.Services.Services
                         p.ProjectStatusTypeId,
                         p.ProjectStatusType.Name,
                         p.ProjectTags
-                            .Select(t => new ProjectTagResponse(t.Id, t.Tag.Name, t.ProjectId))
+                            .Select(t => new ProjectTagResponse(t.Id, t.Tag.Name))
                             .ToList(),
                         p.CreatedAt,
                         p.UpdatedAt
@@ -71,9 +68,71 @@ namespace ITrade.Services.Services
                 ))
                 .AsSplitQuery()
                 .FirstOrDefaultAsync()
-                ?? throw new Exception("User not found.");
+                        ?? throw new Exception("User not found.");
         }
 
+        public async Task<CurrentUserResponse> GetCurrentUserProfileAsync()
+        {
+            var userId = currentUserService.UserId;
+
+            return await context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new CurrentUserResponse
+            (
+                new UserResponse(u.Id, u.Username, u.UserRole.Name),
+                u.Email,
+                u.CreatedAt,
+                u.UpdatedAt,
+                u.IsEmailConfirmed,
+                u.UserProfileLinks
+                    .Select(pl => new UserProfileLinkResponse(pl.Id, pl.UserId, pl.Url))
+                    .ToList(),
+                    u.UserProfileTags
+                        .Select(pt => new UserProfileTagResponse(pt.Id, pt.Tag.Name))
+                        .ToList(),
+                    (
+                        u.UserRoleId == (int)UserRoleEnum.Client
+                            ? u.OwnedProjects
+                            : u.AssignedProjects
+                    )
+                    .Where(p => !p.IsDeleted)
+                    .Select(p => new ProjectResponse
+                    (
+                        p.Id,
+                        p.Name,
+                        p.Description,
+                        p.OwnerId,
+                        p.Owner.Username,
+                        p.WorkerId,
+                        p.Worker != null ? p.Worker.Username : null,
+                        p.Deadline,
+                        p.ProjectStatusTypeId,
+                        p.ProjectStatusType.Name,
+                        p.ProjectTags
+                            .Select(t => new ProjectTagResponse(t.Id, t.Tag.Name))
+                            .ToList(),
+                        p.CreatedAt,
+                        p.UpdatedAt
+                    ))
+                    .ToList(),
+                    u.ReceivedReviews
+                        .Select(r => new ReviewResponse
+                        (
+                            r.Id,
+                            r.ReviewerId,
+                            r.Reviewer.Username,
+                            r.RevieweeId,
+                            r.Reviewee.Username,
+                            r.Rating,
+                            r.Title,
+                            r.Comment,
+                            r.CreatedAt
+                        ))
+                        .ToList()
+                ))
+                .FirstOrDefaultAsync()
+                ?? throw new KeyNotFoundException("User not found.");
+        }
 
         public async Task<ICollection<UserResponse>> SearchUsersAsync(string userName)
         {
@@ -84,7 +143,6 @@ namespace ITrade.Services.Services
                 (
                     u.Id,
                     u.Username,
-                    u.Email,
                     u.UserRole.Name
                 ))
                 .ToListAsync();

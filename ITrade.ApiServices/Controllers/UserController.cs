@@ -9,6 +9,12 @@ namespace ITrade.ApiServices.Controllers
         IUserService userService,
         ITagService tagService) : ControllerBase
     {
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUserProfile()
+        {
+            return Ok(await userService.GetCurrentUserProfileAsync());
+        }
+
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserProfile([FromRoute] int id)
         {

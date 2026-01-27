@@ -13,7 +13,7 @@ namespace ITrade.Services.Services
         ICurrentUserService currentUserService
     ) : IProjectService
     {
-        public async Task<ICollection<ProjectResponse>> GetUserProjectsAsync()
+        public async Task<ICollection<ProjectResponse>> GetDashboardProjectsAsync()
         {
             switch (currentUserService.UserRole)
             {
@@ -44,48 +44,46 @@ namespace ITrade.Services.Services
                     p.ProjectStatusTypeId,
                     p.ProjectStatusType.Name,
                     p.ProjectTags
-                        .Select(pt => new ProjectTagResponse(
-                            pt.Id,
-                            pt.Tag.Name,
-                            pt.ProjectId
-                        ))
-                        .ToList(),
-                    p.CreatedAt,
-                    p.UpdatedAt
-                ))
-                .FirstOrDefaultAsync()
+                            .Select(pt => new ProjectTagResponse(
+                                pt.Id,
+                                pt.Tag.Name
+                            ))
+                            .ToList(),
+                        p.CreatedAt,
+                        p.UpdatedAt
+                    ))
+                    .FirstOrDefaultAsync()
                 ?? throw new KeyNotFoundException("Project not found.");
         }
 
         public async Task<ICollection<ProjectResponse>> SearchProjectsAsync(string query)
         {
             return await context.Projects
-                .Where(p => p.Name.Contains(query))
-                .Select(p => new ProjectResponse(
-                    p.Id,
-                    p.Name,
-                    p.Description,
-                    p.OwnerId,
-                    p.Owner.Username,
-                    p.WorkerId,
-                    p.Worker != null ? p.Worker.Username : null,
-                    p.Deadline,
-                    p.ProjectStatusTypeId,
-                    p.ProjectStatusType.Name,
-                    p.ProjectTags
-                        .Select(pt => new ProjectTagResponse(
-                            pt.Id,
-                            pt.Tag.Name,
-                            pt.ProjectId
-                        ))
-                        .ToList(),
-                    p.CreatedAt,
-                    p.UpdatedAt
-                ))
-                .ToListAsync();
-        }
+                    .Where(p => p.Name.Contains(query))
+                    .Select(p => new ProjectResponse(
+                        p.Id,
+                        p.Name,
+                        p.Description,
+                        p.OwnerId,
+                        p.Owner.Username,
+                        p.WorkerId,
+                        p.Worker != null ? p.Worker.Username : null,
+                        p.Deadline,
+                        p.ProjectStatusTypeId,
+                        p.ProjectStatusType.Name,
+                        p.ProjectTags
+                            .Select(pt => new ProjectTagResponse(
+                                pt.Id,
+                                pt.Tag.Name
+                            ))
+                            .ToList(),
+                        p.CreatedAt,
+                        p.UpdatedAt
+                    ))
+                    .ToListAsync();
+            }
 
-        public async Task<int> CreateProjectAsync(ProjectRequest projectRequest)
+            public async Task<int> CreateProjectAsync(ProjectRequest projectRequest)
         {
             ValidateProjectReq(projectRequest);
             if (currentUserService.UserRole != UserRoleEnum.Client)
@@ -107,10 +105,14 @@ namespace ITrade.Services.Services
             }
 
             await context.Projects.AddAsync(newProject);
-            await context.SaveChangesAsync();
 
             foreach (var tagId in projectRequest.TagIds)
             {
+                if (!await context.Tags.AnyAsync(t => t.Id == tagId))
+                {
+                    throw new KeyNotFoundException($"Tag with ID {tagId} not found.");
+                }
+
                 var projectTag = new ProjectTag
                 {
                     ProjectId = newProject.Id,
@@ -193,49 +195,48 @@ namespace ITrade.Services.Services
                     p.ProjectStatusTypeId,
                     p.ProjectStatusType.Name,
                     p.ProjectTags
-                        .Select(pt => new ProjectTagResponse(
-                            pt.Id,
-                            pt.Tag.Name,
-                            pt.ProjectId
-                        ))
-                        .ToList(),
-                    p.CreatedAt,
-                    p.UpdatedAt
-                ))
-                .ToListAsync();
-        }
+                                    .Select(pt => new ProjectTagResponse(
+                                        pt.Id,
+                                        pt.Tag.Name
+                                    ))
+                                    .ToList(),
+                                p.CreatedAt,
+                                p.UpdatedAt
+                            ))
+                            .ToListAsync();
+                    }
 
+                    //unused
         private async Task<ICollection<ProjectResponse>> GetSpecialistProjectsAsync()
         {
             var userId = currentUserService.UserId;
 
             return await context.Projects
-                .Where(p => p.WorkerId == userId)
-                .Select(p => new ProjectResponse(
-                    p.Id,
-                    p.Name,
-                    p.Description,
-                    p.OwnerId,
-                    p.Owner.Username,
-                    p.WorkerId,
-                    p.Worker != null ? p.Worker.Username : null,
-                    p.Deadline,
-                    p.ProjectStatusTypeId,
-                    p.ProjectStatusType.Name,
-                    p.ProjectTags
-                        .Select(pt => new ProjectTagResponse(
-                            pt.Id,
-                            pt.Tag.Name,
-                            pt.ProjectId
-                        ))
-                        .ToList(),
-                    p.CreatedAt,
-                    p.UpdatedAt
-                ))
-                .ToListAsync();
-        }
+                    .Where(p => p.WorkerId == userId)
+                    .Select(p => new ProjectResponse(
+                        p.Id,
+                        p.Name,
+                        p.Description,
+                        p.OwnerId,
+                        p.Owner.Username,
+                        p.WorkerId,
+                        p.Worker != null ? p.Worker.Username : null,
+                        p.Deadline,
+                        p.ProjectStatusTypeId,
+                        p.ProjectStatusType.Name,
+                        p.ProjectTags
+                            .Select(pt => new ProjectTagResponse(
+                                pt.Id,
+                                pt.Tag.Name
+                            ))
+                            .ToList(),
+                        p.CreatedAt,
+                        p.UpdatedAt
+                    ))
+                    .ToListAsync();
+            }
 
-        private void ValidateProjectReq(ProjectRequest projectRequest)
+            private void ValidateProjectReq(ProjectRequest projectRequest)
         {
             if (projectRequest.Status != null && !Enum.IsDefined(typeof(ProjectStatusTypeEnum), projectRequest.Status))
             {

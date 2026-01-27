@@ -12,9 +12,9 @@ namespace ITrade.ApiServices.Controllers
         ) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetUserProjects()
+        public async Task<IActionResult> GetDashboardProjects()
         {
-            return Ok(await projectService.GetUserProjectsAsync());
+            return Ok(await projectService.GetDashboardProjectsAsync());
         }
 
         [HttpGet("{projectId:int}")]

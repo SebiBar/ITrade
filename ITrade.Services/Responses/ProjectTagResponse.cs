@@ -3,7 +3,6 @@
     public record ProjectTagResponse
     (
         int Id,
-        string TagName,
-        int ProjectId
+        string Name
     );
 }

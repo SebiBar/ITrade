@@ -8,6 +8,12 @@ namespace ITrade.ApiServices.Controllers
     [ApiController, Authorize, Route("reviews")]
     public class ReviewController(IReviewService reviewService) : ControllerBase
     {
+        [HttpGet]
+        public async Task<IActionResult> GetSentReviews()
+        {
+            return Ok(await reviewService.GetSentReviewsAsync());
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateReview([FromBody] ReviewCreateRequest createReviewRequest)
         {
