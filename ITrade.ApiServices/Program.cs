@@ -89,6 +89,7 @@ builder.Services.AddHttpClient("Mailjet", (sp, client) =>
 
 //Service initializations here
 builder.Services.AddScoped<IDatabaseSeedService, DatabaseSeedService>();
+builder.Services.AddScoped<IDevDataSeederService, DevDataSeederService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -120,6 +121,11 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var seedService = scope.ServiceProvider.GetRequiredService<IDatabaseSeedService>();
     seedService.MigrateDatabase(scope);
+
+    // Seed dev test data
+    var devSeeder = scope.ServiceProvider.GetRequiredService<IDevDataSeederService>();
+    var context = scope.ServiceProvider.GetRequiredService<Context>();
+    devSeeder.SeedDevDataAsync(context).GetAwaiter().GetResult();
 }
 
 app.UseHttpsRedirection();
