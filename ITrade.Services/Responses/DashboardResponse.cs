@@ -1,7 +1,7 @@
 ﻿namespace ITrade.Services.Responses
 {
-    public record DashboardResponse
+    public abstract record DashboardResponse
     (
-        //base class
+        int UnreadNotificationCount
     );
 }

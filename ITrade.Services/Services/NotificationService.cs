@@ -53,6 +53,13 @@ namespace ITrade.Services.Services
                 )).ToListAsync();
         }
 
+        public async Task<int> GetUnreadNotificationCountAsync()
+        {
+            return await context.Notifications
+                .Where(n => n.UserId == currentUserService.UserId && !n.IsRead)
+                .CountAsync();
+        }
+
         private void ValidateNotificationRequest(NotificationRequest request)
         {
             if (request.Name.Length > 200)
