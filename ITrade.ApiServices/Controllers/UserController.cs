@@ -28,13 +28,13 @@ namespace ITrade.ApiServices.Controllers
             return Ok();
         }
 
-        [HttpPost("tags"), Authorize(Roles = "Specialist")]
+        [HttpPost("tags"), Authorize(Roles = "Specialist,Admin")]
         public async Task<IActionResult> AddProfileTag([FromQuery] int tagId)
         {
             return Ok(await tagService.AddProfileTagAsync(tagId));
         }
 
-        [HttpDelete("tags/{tagId:int}"), Authorize(Roles = "Specialist")]
+        [HttpDelete("tags/{tagId:int}"), Authorize(Roles = "Specialist,Admin")]
         public async Task<IActionResult> RemoveProfileTag([FromRoute] int tagId)
         {
             await tagService.RemoveProfileTagAsync(tagId);

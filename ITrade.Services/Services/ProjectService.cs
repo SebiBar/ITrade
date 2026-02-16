@@ -103,9 +103,17 @@ namespace ITrade.Services.Services
 
         public async Task<List<ProjectResponse>> GetDeletedProjectsAsync()
         {
-            return await context.Projects
+            var query = context.Projects
                 .IgnoreQueryFilters()
-                .Where(p => p.IsDeleted && p.OwnerId == currentUserService.UserId)
+                .Where(p => p.IsDeleted);
+
+            // Admins can see all deleted projects, others only their own
+            if (currentUserService.UserRole != UserRoleEnum.Admin)
+            {
+                query = query.Where(p => p.OwnerId == currentUserService.UserId);
+            }
+
+            return await query
                 .Select(p => new ProjectResponse(
                     p.Id,
                     p.Name,
@@ -133,7 +141,8 @@ namespace ITrade.Services.Services
                 .FirstOrDefaultAsync(p => p.Id == projectId && p.IsDeleted)
                 ?? throw new KeyNotFoundException("Deleted project not found.");
 
-            if (project.OwnerId != currentUserService.UserId)
+            // Admins can restore any project, others only their own
+            if (currentUserService.UserRole != UserRoleEnum.Admin && project.OwnerId != currentUserService.UserId)
             {
                 throw new InvalidOperationException("You do not have permission to restore this project.");
             }

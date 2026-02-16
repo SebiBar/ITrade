@@ -38,7 +38,7 @@ namespace ITrade.ApiServices.Controllers
             return Ok();
         }
 
-        [HttpGet("deleted"), Authorize(Roles = "Client")]
+        [HttpGet("deleted"), Authorize(Roles = "Client,Admin")]
         public async Task<IActionResult> GetDeletedProjects()
         {
             return Ok(await projectService.GetDeletedProjectsAsync());
@@ -51,7 +51,7 @@ namespace ITrade.ApiServices.Controllers
             return Ok();
         }
 
-        [HttpPost("{projectId:int}/restore"), Authorize(Roles = "Client")]
+        [HttpPost("{projectId:int}/restore"), Authorize(Roles = "Client,Admin")]
         public async Task<IActionResult> RestoreProject([FromRoute] int projectId)
         {
             await projectService.RestoreProjectAsync(projectId);
