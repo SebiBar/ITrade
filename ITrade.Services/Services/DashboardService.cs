@@ -28,7 +28,6 @@ namespace ITrade.Services.Services
         {
             var userId = currentUserService.UserId;
 
-            // Sequential calls - DbContext is not thread-safe
             var unreadCount = await notificationService.GetUnreadNotificationCountAsync();
             var pendingInvitations = await GetPendingInvitationsAsync(userId);
             var activeProjects = await GetActiveProjectsForSpecialistAsync(userId);
@@ -46,7 +45,6 @@ namespace ITrade.Services.Services
         {
             var userId = currentUserService.UserId;
 
-            // Sequential calls - DbContext is not thread-safe
             var unreadCount = await notificationService.GetUnreadNotificationCountAsync();
             var pendingApplications = await GetPendingApplicationsAsync(userId);
             var activeProjectCount = await GetActiveProjectCountForClientAsync(userId);
@@ -62,7 +60,14 @@ namespace ITrade.Services.Services
 
         private async Task<DashboardResponse> BuildAdminDashboardAsync()
         {
-            throw new NotImplementedException("Admin dashboard not yet implemented.");
+            var unreadCount = await notificationService.GetUnreadNotificationCountAsync();
+
+            var tags = await context.Tags.ToListAsync();
+
+            return new DashboardAdminResponse(
+                UnreadNotificationCount: unreadCount,
+                Tags: tags
+            );
         }
 
         private async Task<ICollection<RequestResponse>> GetPendingInvitationsAsync(int userId)
