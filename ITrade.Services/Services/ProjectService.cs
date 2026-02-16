@@ -41,33 +41,6 @@ namespace ITrade.Services.Services
                 ?? throw new KeyNotFoundException("Project not found.");
         }
 
-        public async Task<ICollection<ProjectResponse>> SearchProjectsAsync(string query)
-        {
-            return await context.Projects
-                    .Where(p => p.Name.Contains(query))
-                    .Select(p => new ProjectResponse(
-                        p.Id,
-                        p.Name,
-                        p.Description,
-                        p.OwnerId,
-                        p.Owner.Username,
-                        p.WorkerId,
-                        p.Worker != null ? p.Worker.Username : null,
-                        p.Deadline,
-                        p.ProjectStatusTypeId,
-                        p.ProjectStatusType.Name,
-                        p.ProjectTags
-                            .Select(pt => new ProjectTagResponse(
-                                pt.Id,
-                                pt.Tag.Name
-                            ))
-                            .ToList(),
-                        p.CreatedAt,
-                        p.UpdatedAt
-                    ))
-                    .ToListAsync();
-        }
-
         public async Task<int> CreateProjectAsync(ProjectRequest projectRequest)
         {
             ValidateProjectReq(projectRequest);

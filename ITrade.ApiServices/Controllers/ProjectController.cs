@@ -17,12 +17,6 @@ namespace ITrade.ApiServices.Controllers
             return Ok(await projectService.GetProjectAsync(projectId));
         }
 
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchProjects([FromQuery] string query)
-        {
-            return Ok(await projectService.SearchProjectsAsync(query));
-        }
-
         [HttpPost, Authorize(Roles = "Client")]
         public async Task<IActionResult> CreateProject([FromBody] ProjectRequest projectRequest)
         {

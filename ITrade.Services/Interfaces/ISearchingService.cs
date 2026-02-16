@@ -1,7 +1,10 @@
-﻿namespace ITrade.Services.Interfaces
+﻿using ITrade.Services.Requests;
+using ITrade.Services.Responses;
+
+namespace ITrade.Services.Interfaces
 {
     public interface ISearchingService
     {
-        Task<ICollection<T>> SearchAsync<T>(string query);
+        Task<SearchResponse> SearchAsync(SearchRequest request);
     }
 }

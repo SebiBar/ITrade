@@ -21,12 +21,6 @@ namespace ITrade.ApiServices.Controllers
             return Ok(await userService.GetUserProfileAsync(id));
         }
 
-        [HttpGet]
-        public async Task<IActionResult> SearchUser([FromQuery] string query)
-        {
-            return Ok(await userService.SearchUsersAsync(query));
-        }
-
         [HttpPut]
         public async Task<IActionResult> ChangeUsername([FromQuery] string newUsername)
         {

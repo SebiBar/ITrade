@@ -134,20 +134,6 @@ namespace ITrade.Services.Services
                 ?? throw new KeyNotFoundException("User not found.");
         }
 
-        public async Task<ICollection<UserResponse>> SearchUsersAsync(string userName)
-        {
-            return await context.Users
-                .Where(u => u.Username.Contains(userName))
-                .Where(u => u.UserRoleId != (int)UserRoleEnum.Admin)
-                .Select(u => new UserResponse
-                (
-                    u.Id,
-                    u.Username,
-                    u.UserRole.Name
-                ))
-                .ToListAsync();
-        }
-
         public async Task ChangeUsernameAsync(string newUsername)
         {
             var user = context.Users.Find(currentUserService.UserId)
