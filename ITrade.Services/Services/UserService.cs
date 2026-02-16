@@ -169,5 +169,76 @@ namespace ITrade.Services.Services
             context.UserProfileLinks.Remove(profileLink);
             await context.SaveChangesAsync();
         }
+
+        public async Task SoftDeleteAccountAsync()
+        {
+            var user = await context.Users.FindAsync(currentUserService.UserId)
+                ?? throw new KeyNotFoundException("User not found.");
+
+            user.IsDeleted = true;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task HardDeleteUserAsync(int userId)
+        {
+            var user = await context.Users
+                .IgnoreQueryFilters()
+                .Include(u => u.Tokens)
+                .Include(u => u.Notifications)
+                .Include(u => u.UserProfileLinks)
+                .Include(u => u.UserProfileTags)
+                .Include(u => u.SentReviews)
+                .Include(u => u.ReceivedReviews)
+                .Include(u => u.SentRequests)
+                .Include(u => u.ReceivedRequests)
+                .Include(u => u.OwnedProjects)
+                    .ThenInclude(p => p.ProjectTags)
+                .Include(u => u.OwnedProjects)
+                    .ThenInclude(p => p.Requests)
+                .Include(u => u.AssignedProjects)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(u => u.Id == userId)
+                ?? throw new KeyNotFoundException("User not found.");
+
+            // Remove tokens
+            context.Tokens.RemoveRange(user.Tokens);
+
+            // Remove notifications
+            context.Notifications.RemoveRange(user.Notifications);
+
+            // Remove profile links and tags
+            context.UserProfileLinks.RemoveRange(user.UserProfileLinks);
+            context.UserProfileTags.RemoveRange(user.UserProfileTags);
+
+            // Remove reviews (both sent and received)
+            context.Reviews.RemoveRange(user.SentReviews);
+            context.Reviews.RemoveRange(user.ReceivedReviews);
+
+            // Remove requests (both sent and received)
+            context.Requests.RemoveRange(user.SentRequests);
+            context.Requests.RemoveRange(user.ReceivedRequests);
+
+            // Remove owned projects and their related data
+            foreach (var project in user.OwnedProjects)
+            {
+                context.ProjectTags.RemoveRange(project.ProjectTags);
+                context.Requests.RemoveRange(project.Requests);
+            }
+            context.Projects.RemoveRange(user.OwnedProjects);
+
+            // Unassign from assigned projects (don't delete them)
+            foreach (var project in user.AssignedProjects)
+            {
+                project.WorkerId = null;
+                project.Worker = null;
+            }
+
+            // Finally remove the user
+            context.Users.Remove(user);
+
+            await context.SaveChangesAsync();
+        }
     }
 }

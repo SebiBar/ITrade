@@ -64,6 +64,14 @@ namespace ITrade.DB
             modelBuilder.Entity<Request>().HasQueryFilter(r => !r.Project.IsDeleted);
             modelBuilder.Entity<ProjectTag>().HasQueryFilter(pt => !pt.Project.IsDeleted);
 
+            //auto filter soft deleted Users
+            modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);
+            modelBuilder.Entity<Token>().HasQueryFilter(t => !t.User.IsDeleted);
+            modelBuilder.Entity<Notification>().HasQueryFilter(n => !n.User.IsDeleted);
+            modelBuilder.Entity<UserProfileLink>().HasQueryFilter(upl => !upl.User.IsDeleted);
+            modelBuilder.Entity<UserProfileTag>().HasQueryFilter(upt => !upt.User.IsDeleted);
+            modelBuilder.Entity<Review>().HasQueryFilter(r => !r.Reviewer.IsDeleted && !r.Reviewee.IsDeleted);
+
         }
     }
 }

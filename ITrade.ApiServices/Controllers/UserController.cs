@@ -54,5 +54,19 @@ namespace ITrade.ApiServices.Controllers
             return Ok();
         }
 
+        [HttpDelete("me")]
+        public async Task<IActionResult> SoftDeleteAccount()
+        {
+            await userService.SoftDeleteAccountAsync();
+            return Ok();
+        }
+
+        [HttpDelete("{userId:int}"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> HardDeleteUser([FromRoute] int userId)
+        {
+            await userService.HardDeleteUserAsync(userId);
+            return Ok();
+        }
+
     }
 }

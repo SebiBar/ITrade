@@ -38,6 +38,26 @@ namespace ITrade.ApiServices.Controllers
             return Ok();
         }
 
+        [HttpGet("deleted"), Authorize(Roles = "Client")]
+        public async Task<IActionResult> GetDeletedProjects()
+        {
+            return Ok(await projectService.GetDeletedProjectsAsync());
+        }
+
+        [HttpDelete("{projectId:int}/permanent"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> HardDeleteProject([FromRoute] int projectId)
+        {
+            await projectService.HardDeleteProjectAsync(projectId);
+            return Ok();
+        }
+
+        [HttpPost("{projectId:int}/restore"), Authorize(Roles = "Client")]
+        public async Task<IActionResult> RestoreProject([FromRoute] int projectId)
+        {
+            await projectService.RestoreProjectAsync(projectId);
+            return Ok();
+        }
+
         [HttpPost("{projectId:int}/tags"), Authorize(Roles = "Client")]
         public async Task<IActionResult> AddProjectTag(
             [FromRoute] int projectId, [FromBody] int tagId)

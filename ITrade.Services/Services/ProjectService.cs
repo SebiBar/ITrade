@@ -101,6 +101,65 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
+        public async Task<List<ProjectResponse>> GetDeletedProjectsAsync()
+        {
+            return await context.Projects
+                .IgnoreQueryFilters()
+                .Where(p => p.IsDeleted && p.OwnerId == currentUserService.UserId)
+                .Select(p => new ProjectResponse(
+                    p.Id,
+                    p.Name,
+                    p.Description,
+                    p.OwnerId,
+                    p.Owner.Username,
+                    p.WorkerId,
+                    p.Worker != null ? p.Worker.Username : null,
+                    p.Deadline,
+                    p.ProjectStatusTypeId,
+                    p.ProjectStatusType.Name,
+                    p.ProjectTags
+                        .Select(pt => new ProjectTagResponse(pt.Id, pt.Tag.Name))
+                        .ToList(),
+                    p.CreatedAt,
+                    p.UpdatedAt
+                ))
+                .ToListAsync();
+        }
+
+        public async Task RestoreProjectAsync(int projectId)
+        {
+            var project = await context.Projects
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.Id == projectId && p.IsDeleted)
+                ?? throw new KeyNotFoundException("Deleted project not found.");
+
+            if (project.OwnerId != currentUserService.UserId)
+            {
+                throw new InvalidOperationException("You do not have permission to restore this project.");
+            }
+
+            project.IsDeleted = false;
+            project.UpdatedAt = DateTime.UtcNow;
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task HardDeleteProjectAsync(int projectId)
+        {
+            var project = await context.Projects
+                .IgnoreQueryFilters()
+                .Include(p => p.ProjectTags)
+                .Include(p => p.Requests)
+                .FirstOrDefaultAsync(p => p.Id == projectId)
+                ?? throw new KeyNotFoundException("Project not found.");
+
+            context.ProjectTags.RemoveRange(project.ProjectTags);
+            context.Requests.RemoveRange(project.Requests);
+            context.Projects.Remove(project);
+
+            await context.SaveChangesAsync();
+        }
+
         public async Task UpdateProjectAsync(int projectId, ProjectUpdateRequest projectRequest)
         {
             ValidateProjectUpdateReq(projectRequest);
