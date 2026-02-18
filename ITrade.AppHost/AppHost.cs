@@ -11,9 +11,12 @@ var apiService = builder.AddProject<Projects.ITrade_ApiServices>("itrade-apiserv
     .WithReference(db)
     .WaitFor(db);
 
-var frontend = builder.AddContainer("itrade-frontend", "itrade-frontend")
-    .WithDockerfile("../ITrade.UserClient/itrade")
-    .WithHttpEndpoint(port: 80, targetPort: 80, name: "http")
-    .WithEnvironment("VITE_API_URL", apiService.GetEndpoint("http"));
+var frontend = builder.AddNpmApp("itrade-frontend", "../ITrade.UserClient/itrade", "dev")
+    .WithReference(apiService)
+    .WaitFor(apiService)
+    .WithEnvironment("VITE_API_URL", apiService.GetEndpoint("http"))
+    .WithHttpEndpoint(env: "PORT")
+    .WithExternalHttpEndpoints()
+    .PublishAsDockerFile();
 
 builder.Build().Run();
