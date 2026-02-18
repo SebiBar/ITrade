@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Route("notifications"), Authorize]
+    [ApiController, Authorize, Route("api/notifications")]
     public class NotificationController(INotificationService notificationService) : ControllerBase
     {
         [HttpGet]

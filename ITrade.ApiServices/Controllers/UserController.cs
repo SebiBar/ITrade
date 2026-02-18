@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Route("user"), Authorize]
+    [ApiController, Authorize, Route("api/user")]
     public class UserController(
         IUserService userService,
         ITagService tagService) : ControllerBase

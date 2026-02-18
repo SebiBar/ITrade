@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Authorize, Route("projects")]
+    [ApiController, Authorize, Route("api/projects")]
     public class ProjectController(
         IProjectService projectService,
         ITagService tagService

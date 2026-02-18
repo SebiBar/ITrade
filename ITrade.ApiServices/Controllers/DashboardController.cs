@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Authorize, Route("dashboard")]
+    [ApiController, Authorize, Route("api/dashboard")]
     public class DashboardController(
         IDashboardService dashboardService) : ControllerBase
     {

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Route("auth")]
+    [ApiController, Route("api/auth")]
     public class AuthController(
         IAuthService authService,
         ITokenService tokenService

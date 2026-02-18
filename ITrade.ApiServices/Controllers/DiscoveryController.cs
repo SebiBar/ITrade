@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Authorize, Route("discovery")]
+    [ApiController, Authorize, Route("api/discovery")]
     public class DiscoveryController(
         IMatchingService matchingService,
         ISearchingService searchingService): ControllerBase

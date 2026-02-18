@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Authorize, Route("requests")]
+    [ApiController, Authorize, Route("api/requests")]
     public class RequestController(IRequestService requestService) : ControllerBase
     {
         [HttpGet]

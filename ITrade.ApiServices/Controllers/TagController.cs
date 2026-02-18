@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Authorize, Route("tags")]
+    [ApiController, Authorize, Route("api/tags")]
     public class TagController(ITagService tagService) : ControllerBase
     {
         [HttpGet("search")]

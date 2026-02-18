@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITrade.ApiServices.Controllers
 {
-    [ApiController, Authorize, Route("reviews")]
+    [ApiController, Authorize, Route("api/reviews")]
     public class ReviewController(IReviewService reviewService) : ControllerBase
     {
         [HttpGet]
