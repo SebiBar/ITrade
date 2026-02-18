@@ -68,5 +68,11 @@ namespace ITrade.ApiServices.Controllers
             return Ok();
         }
 
+        [HttpGet("ping"), AllowAnonymous]
+        public async Task<IActionResult> Ping()
+        {
+            return Ok("Pong!");
+        }
+
     }
 }
