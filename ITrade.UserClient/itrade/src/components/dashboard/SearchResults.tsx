@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import type { SearchResponse } from '../../types';
 import ProjectCard from './ProjectCard';
 
@@ -8,6 +9,7 @@ interface SearchResultsProps {
 
 /** Overlay showing search results for projects and users */
 export default function SearchResults({ results, onClose }: SearchResultsProps) {
+    const navigate = useNavigate();
     const hasProjects = results.projects.length > 0;
     const hasUsers = results.users.length > 0;
     const isEmpty = !hasProjects && !hasUsers;
@@ -64,7 +66,8 @@ export default function SearchResults({ results, onClose }: SearchResultsProps) 
                         {results.users.map(u => (
                             <div
                                 key={u.id}
-                                className="flex items-center gap-3 px-4 py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl hover:bg-white/[0.05] transition-colors"
+                                onClick={() => navigate(`/users/${u.id}`)}
+                                className="flex items-center gap-3 px-4 py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl hover:bg-white/[0.05] transition-colors cursor-pointer"
                             >
                                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500/30 to-indigo-500/30 border border-white/10 flex items-center justify-center shrink-0">
                                     <span className="text-xs font-bold text-blue-300">
