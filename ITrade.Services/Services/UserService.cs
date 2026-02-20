@@ -26,31 +26,28 @@ namespace ITrade.Services.Services
                     u.UserProfileTags
                         .Select(pt => new UserProfileTagResponse(pt.Id, pt.Tag.Name))
                         .ToList(),
-                    (
-                        u.UserRoleId == (int)UserRoleEnum.Client
-                            ? u.OwnedProjects
-                            : u.AssignedProjects
-                    )
-                    .Where(p => !p.IsDeleted)
-                    .Select(p => new ProjectResponse
-                    (
-                        p.Id,
-                        p.Name,
-                        p.Description,
-                        p.OwnerId,
-                        p.Owner.Username,
-                        p.WorkerId,
-                        p.Worker != null ? p.Worker.Username : null,
-                        p.Deadline,
-                        p.ProjectStatusTypeId,
-                        p.ProjectStatusType.Name,
-                        p.ProjectTags
-                            .Select(t => new ProjectTagResponse(t.Id, t.Tag.Name))
-                            .ToList(),
-                        p.CreatedAt,
-                        p.UpdatedAt
-                    ))
-                    .ToList(),
+                    u.OwnedProjects
+                        .Where(p => u.UserRoleId == (int)UserRoleEnum.Client)
+                        .Concat(u.AssignedProjects.Where(p => u.UserRoleId != (int)UserRoleEnum.Client))
+                        .Select(p => new ProjectResponse
+                        (
+                            p.Id,
+                            p.Name,
+                            p.Description,
+                            p.OwnerId,
+                            p.Owner.Username,
+                            p.WorkerId,
+                            p.Worker != null ? p.Worker.Username : null,
+                            p.Deadline,
+                            p.ProjectStatusTypeId,
+                            p.ProjectStatusType.Name,
+                            p.ProjectTags
+                                .Select(t => new ProjectTagResponse(t.Id, t.Tag.Name))
+                                .ToList(),
+                            p.CreatedAt,
+                            p.UpdatedAt
+                        ))
+                        .ToList(),
                     u.ReceivedReviews
                         .Select(r => new ReviewResponse
                         (
@@ -75,63 +72,63 @@ namespace ITrade.Services.Services
         {
             var userId = currentUserService.UserId;
 
-            return await context.Users
-            .Where(u => u.Id == userId)
-            .Select(u => new CurrentUserResponse
-            (
-                new UserResponse(u.Id, u.Username, u.UserRole.Name),
-                u.Email,
-                u.CreatedAt,
-                u.UpdatedAt,
-                u.IsEmailConfirmed,
-                u.UserProfileLinks
-                    .Select(pl => new UserProfileLinkResponse(pl.Id, pl.UserId, pl.Url))
-                    .ToList(),
-                    u.UserProfileTags
+            var userData = await context.Users
+                .Where(u => u.Id == userId)
+                .Select(u => new
+                {
+                    User = new UserResponse(u.Id, u.Username, u.UserRole.Name),
+                    u.Email,
+                    u.CreatedAt,
+                    u.UpdatedAt,
+                    u.IsEmailConfirmed,
+                    u.UserRoleId,
+                    ProfileLinks = u.UserProfileLinks
+                        .Select(pl => new UserProfileLinkResponse(pl.Id, pl.UserId, pl.Url))
+                        .ToList(),
+                    ProfileTags = u.UserProfileTags
                         .Select(pt => new UserProfileTagResponse(pt.Id, pt.Tag.Name))
                         .ToList(),
-                    (
-                        u.UserRoleId == (int)UserRoleEnum.Client
-                            ? u.OwnedProjects
-                            : u.AssignedProjects
-                    )
-                    .Where(p => !p.IsDeleted)
-                    .Select(p => new ProjectResponse
-                    (
-                        p.Id,
-                        p.Name,
-                        p.Description,
-                        p.OwnerId,
-                        p.Owner.Username,
-                        p.WorkerId,
-                        p.Worker != null ? p.Worker.Username : null,
-                        p.Deadline,
-                        p.ProjectStatusTypeId,
-                        p.ProjectStatusType.Name,
-                        p.ProjectTags
-                            .Select(t => new ProjectTagResponse(t.Id, t.Tag.Name))
-                            .ToList(),
-                        p.CreatedAt,
-                        p.UpdatedAt
-                    ))
-                    .ToList(),
-                    u.ReceivedReviews
-                        .Select(r => new ReviewResponse
-                        (
-                            r.Id,
-                            r.ReviewerId,
-                            r.Reviewer.Username,
-                            r.RevieweeId,
-                            r.Reviewee.Username,
-                            r.Rating,
-                            r.Title,
-                            r.Comment,
-                            r.CreatedAt
-                        ))
+                    OwnedProjects = u.OwnedProjects
+                        .Select(p => new ProjectResponse(
+                            p.Id, p.Name, p.Description, p.OwnerId, p.Owner.Username,
+                            p.WorkerId, p.Worker != null ? p.Worker.Username : null,
+                            p.Deadline, p.ProjectStatusTypeId, p.ProjectStatusType.Name,
+                            p.ProjectTags.Select(t => new ProjectTagResponse(t.Id, t.Tag.Name)).ToList(),
+                            p.CreatedAt, p.UpdatedAt))
+                        .ToList(),
+                    AssignedProjects = u.AssignedProjects
+                        .Select(p => new ProjectResponse(
+                            p.Id, p.Name, p.Description, p.OwnerId, p.Owner.Username,
+                            p.WorkerId, p.Worker != null ? p.Worker.Username : null,
+                            p.Deadline, p.ProjectStatusTypeId, p.ProjectStatusType.Name,
+                            p.ProjectTags.Select(t => new ProjectTagResponse(t.Id, t.Tag.Name)).ToList(),
+                            p.CreatedAt, p.UpdatedAt))
+                        .ToList(),
+                    Reviews = u.ReceivedReviews
+                        .Select(r => new ReviewResponse(
+                            r.Id, r.ReviewerId, r.Reviewer.Username, r.RevieweeId,
+                            r.Reviewee.Username, r.Rating, r.Title, r.Comment, r.CreatedAt))
                         .ToList()
-                ))
+                })
                 .FirstOrDefaultAsync()
                 ?? throw new KeyNotFoundException("User not found.");
+
+            // Combine projects in memory based on user role
+            var projects = userData.UserRoleId == (int)UserRoleEnum.Client
+                ? userData.OwnedProjects
+                : userData.AssignedProjects;
+
+            return new CurrentUserResponse(
+                userData.User,
+                userData.Email,
+                userData.CreatedAt,
+                userData.UpdatedAt,
+                userData.IsEmailConfirmed,
+                userData.ProfileLinks,
+                userData.ProfileTags,
+                projects,
+                userData.Reviews
+            );
         }
 
         public async Task ChangeUsernameAsync(string newUsername)
