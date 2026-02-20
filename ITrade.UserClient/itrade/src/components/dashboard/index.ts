@@ -7,3 +7,4 @@ export { default as SearchBar } from './SearchBar';
 export { default as SearchResults } from './SearchResults';
 export { default as SpecialistDashboard } from './SpecialistDashboard';
 export { default as ClientDashboard } from './ClientDashboard';
+export { default as AdminDashboard } from './AdminDashboard';

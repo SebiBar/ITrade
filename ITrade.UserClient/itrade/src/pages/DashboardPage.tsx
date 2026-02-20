@@ -1,6 +1,6 @@
 import { useUser } from '../context';
 import { UserRole } from '../types';
-import { SpecialistDashboard, ClientDashboard } from '../components/dashboard';
+import { SpecialistDashboard, ClientDashboard, AdminDashboard } from '../components/dashboard';
 
 export default function DashboardPage() {
     const { currentUser } = useUser();
@@ -9,7 +9,9 @@ export default function DashboardPage() {
         ? UserRole.Client
         : currentUser?.role === 'Specialist'
             ? UserRole.Specialist
-            : null;
+            : currentUser?.role === 'Admin'
+                ? UserRole.Admin
+                : null;
 
     return (
         <div className="min-h-[calc(100vh-3.5rem)] bg-[linear-gradient(135deg,#020817_0%,#0a1628_45%,#0f2154_100%)]">
@@ -30,6 +32,7 @@ export default function DashboardPage() {
                 {/* Role-specific dashboard */}
                 {roleId === UserRole.Specialist && <SpecialistDashboard />}
                 {roleId === UserRole.Client && <ClientDashboard />}
+                {roleId === UserRole.Admin && <AdminDashboard />}
                 {roleId === null && (
                     <p className="text-sm text-slate-500">Unknown role.</p>
                 )}

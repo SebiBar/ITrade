@@ -12,7 +12,8 @@ namespace ITrade.Services.Services
     (
         Context context,
         ICurrentUserService currentUserService,
-        INotificationService notificationService
+        INotificationService notificationService,
+        IMatchingService matchingService
     ) : IRequestService
     {
         public async Task<int> CreateRequestAsync(RequestReq projectRequest)
@@ -66,10 +67,13 @@ namespace ITrade.Services.Services
         {
             if (currentUserService.UserRole == UserRoleEnum.Client)
             {
+                // Client: sent invitations, received applications on their projects
                 var invitations = await context.Requests
-                    .Where(r => r.SenderId == currentUserService.UserId)
-                    .Select(r => new RequestResponse
-                        (
+                    .Where(r => r.SenderId == currentUserService.UserId 
+                        && r.RequestTypeId == (int)ProjectRequestTypeEnum.Invitation)
+                    .Select(r => new
+                    {
+                        Request = new RequestResponse(
                             r.Id,
                             r.Message,
                             r.SenderId,
@@ -80,15 +84,20 @@ namespace ITrade.Services.Services
                             r.Project.Name,
                             ((ProjectRequestTypeEnum)r.RequestTypeId).ToString(),
                             r.Accepted,
-                            r.CreatedAt
-                        )
-                    )
+                            r.CreatedAt,
+                            null
+                        ),
+                        SpecialistId = r.ReceiverId,
+                        r.ProjectId
+                    })
                     .ToListAsync();
 
                 var applications = await context.Requests
-                    .Where(r => r.Project.OwnerId == currentUserService.UserId)
-                    .Select(r => new RequestResponse
-                        (
+                    .Where(r => r.Project.OwnerId == currentUserService.UserId 
+                        && r.RequestTypeId == (int)ProjectRequestTypeEnum.Application)
+                    .Select(r => new
+                    {
+                        Request = new RequestResponse(
                             r.Id,
                             r.Message,
                             r.SenderId,
@@ -99,19 +108,42 @@ namespace ITrade.Services.Services
                             r.Project.Name,
                             ((ProjectRequestTypeEnum)r.RequestTypeId).ToString(),
                             r.Accepted,
-                            r.CreatedAt
-                        )
-                    )
+                            r.CreatedAt,
+                            null
+                        ),
+                        SpecialistId = r.SenderId,
+                        r.ProjectId
+                    })
                     .ToListAsync();
 
-                return new UserRequestsResponse(invitations, applications);
+                // Compute match scores in batch
+                var allPairs = invitations
+                    .Select(i => (i.SpecialistId, i.ProjectId))
+                    .Concat(applications.Select(a => (a.SpecialistId, a.ProjectId)))
+                    .Distinct()
+                    .ToList();
+
+                var scores = await matchingService.ComputeMatchScoresAsync(allPairs);
+
+                var invitationsWithScores = invitations
+                    .Select(i => i.Request with { MatchScore = scores.TryGetValue((i.SpecialistId, i.ProjectId), out var s) ? s : 0 })
+                    .ToList();
+
+                var applicationsWithScores = applications
+                    .Select(a => a.Request with { MatchScore = scores.TryGetValue((a.SpecialistId, a.ProjectId), out var s) ? s : 0 })
+                    .ToList();
+
+                return new UserRequestsResponse(invitationsWithScores, applicationsWithScores);
             }
             else if (currentUserService.UserRole == UserRoleEnum.Specialist)
             {
+                // Specialist: received invitations, sent applications
                 var invitations = await context.Requests
-                    .Where(r => r.ReceiverId == currentUserService.UserId)
-                    .Select(r => new RequestResponse
-                        (
+                    .Where(r => r.ReceiverId == currentUserService.UserId 
+                        && r.RequestTypeId == (int)ProjectRequestTypeEnum.Invitation)
+                    .Select(r => new
+                    {
+                        Request = new RequestResponse(
                             r.Id,
                             r.Message,
                             r.SenderId,
@@ -122,15 +154,19 @@ namespace ITrade.Services.Services
                             r.Project.Name,
                             ((ProjectRequestTypeEnum)r.RequestTypeId).ToString(),
                             r.Accepted,
-                            r.CreatedAt
-                        )
-                    )
+                            r.CreatedAt,
+                            null
+                        ),
+                        r.ProjectId
+                    })
                     .ToListAsync();
 
                 var applications = await context.Requests
-                    .Where(r => r.SenderId == currentUserService.UserId)
-                    .Select(r => new RequestResponse
-                        (
+                    .Where(r => r.SenderId == currentUserService.UserId 
+                        && r.RequestTypeId == (int)ProjectRequestTypeEnum.Application)
+                    .Select(r => new
+                    {
+                        Request = new RequestResponse(
                             r.Id,
                             r.Message,
                             r.SenderId,
@@ -141,12 +177,32 @@ namespace ITrade.Services.Services
                             r.Project.Name,
                             ((ProjectRequestTypeEnum)r.RequestTypeId).ToString(),
                             r.Accepted,
-                            r.CreatedAt
-                        )
-                    )
+                            r.CreatedAt,
+                            null
+                        ),
+                        r.ProjectId
+                    })
                     .ToListAsync();
 
-                return new UserRequestsResponse(invitations, applications);
+                // Compute match scores in batch (specialist is always current user)
+                var specialistId = currentUserService.UserId;
+                var allPairs = invitations
+                    .Select(i => (specialistId, i.ProjectId))
+                    .Concat(applications.Select(a => (specialistId, a.ProjectId)))
+                    .Distinct()
+                    .ToList();
+
+                var scores = await matchingService.ComputeMatchScoresAsync(allPairs);
+
+                var invitationsWithScores = invitations
+                    .Select(i => i.Request with { MatchScore = scores.TryGetValue((specialistId, i.ProjectId), out var s) ? s : 0 })
+                    .ToList();
+
+                var applicationsWithScores = applications
+                    .Select(a => a.Request with { MatchScore = scores.TryGetValue((specialistId, a.ProjectId), out var s) ? s : 0 })
+                    .ToList();
+
+                return new UserRequestsResponse(invitationsWithScores, applicationsWithScores);
             }
             else
             {

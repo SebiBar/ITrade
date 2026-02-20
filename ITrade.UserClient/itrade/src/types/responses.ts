@@ -66,6 +66,7 @@ export interface RequestResponse {
     requestType: string;
     accepted?: boolean;
     createdAt: string;
+    matchScore?: number;
 }
 
 export interface NotificationResponse {

@@ -47,7 +47,14 @@ export default function RequestCard({ request, variant, onResolved }: RequestCar
                 {request.message && (
                     <p className="text-xs text-slate-500 m-0 truncate">"{request.message}"</p>
                 )}
-                <p className="text-[0.65rem] text-slate-600 m-0">{formatDate(request.createdAt)}</p>
+                <div className="flex items-center gap-2">
+                    <p className="text-[0.65rem] text-slate-600 m-0">{formatDate(request.createdAt)}</p>
+                    {request.matchScore != null && (
+                        <span className="text-[0.65rem] font-medium text-indigo-400">
+                            {Math.round(request.matchScore)}% match
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">

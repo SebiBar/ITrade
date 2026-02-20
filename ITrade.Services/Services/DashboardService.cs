@@ -72,48 +72,85 @@ namespace ITrade.Services.Services
 
         private async Task<ICollection<RequestResponse>> GetPendingInvitationsAsync(int userId)
         {
-            return await context.Requests
+            var invitations = await context.Requests
                 .Where(r => r.ReceiverId == userId
                     && r.RequestTypeId == (int)ProjectRequestTypeEnum.Invitation
                     && r.Accepted == null)
                 .OrderByDescending(r => r.CreatedAt)
-                .Select(r => new RequestResponse(
-                    r.Id,
-                    r.Message,
-                    r.SenderId,
-                    r.Sender.Username,
-                    r.ReceiverId,
-                    r.Receiver.Username,
-                    r.ProjectId,
-                    r.Project.Name,
-                    ((ProjectRequestTypeEnum)r.RequestTypeId).ToString(),
-                    r.Accepted,
-                    r.CreatedAt
-                ))
+                .Select(r => new
+                {
+                    Request = new RequestResponse(
+                        r.Id,
+                        r.Message,
+                        r.SenderId,
+                        r.Sender.Username,
+                        r.ReceiverId,
+                        r.Receiver.Username,
+                        r.ProjectId,
+                        r.Project.Name,
+                        ((ProjectRequestTypeEnum)r.RequestTypeId).ToString(),
+                        r.Accepted,
+                        r.CreatedAt,
+                        null
+                    ),
+                    r.ProjectId
+                })
                 .ToListAsync();
+
+            if (invitations.Count == 0)
+            {
+                return [];
+            }
+
+            // Compute match scores in batch (specialist is the current user)
+            var pairs = invitations.Select(i => (userId, i.ProjectId)).Distinct().ToList();
+            var scores = await matchingService.ComputeMatchScoresAsync(pairs);
+
+            return invitations
+                .Select(i => i.Request with { MatchScore = scores.TryGetValue((userId, i.ProjectId), out var s) ? s : 0 })
+                .ToList();
         }
 
         private async Task<ICollection<RequestResponse>> GetPendingApplicationsAsync(int userId)
         {
-            return await context.Requests
+            var applications = await context.Requests
                 .Where(r => r.Project.OwnerId == userId
                     && r.RequestTypeId == (int)ProjectRequestTypeEnum.Application
                     && r.Accepted == null)
                 .OrderByDescending(r => r.CreatedAt)
-                .Select(r => new RequestResponse(
-                    r.Id,
-                    r.Message,
-                    r.SenderId,
-                    r.Sender.Username,
-                    r.ReceiverId,
-                    r.Receiver.Username,
-                    r.ProjectId,
-                    r.Project.Name,
-                    ((ProjectRequestTypeEnum)r.RequestTypeId).ToString(),
-                    r.Accepted,
-                    r.CreatedAt
-                ))
+                .Select(r => new
+                {
+                    Request = new RequestResponse(
+                        r.Id,
+                        r.Message,
+                        r.SenderId,
+                        r.Sender.Username,
+                        r.ReceiverId,
+                        r.Receiver.Username,
+                        r.ProjectId,
+                        r.Project.Name,
+                        ((ProjectRequestTypeEnum)r.RequestTypeId).ToString(),
+                        r.Accepted,
+                        r.CreatedAt,
+                        null
+                    ),
+                    SpecialistId = r.SenderId,
+                    r.ProjectId
+                })
                 .ToListAsync();
+
+            if (applications.Count == 0)
+            {
+                return [];
+            }
+
+            // Compute match scores in batch
+            var pairs = applications.Select(a => (a.SpecialistId, a.ProjectId)).Distinct().ToList();
+            var scores = await matchingService.ComputeMatchScoresAsync(pairs);
+
+            return applications
+                .Select(a => a.Request with { MatchScore = scores.TryGetValue((a.SpecialistId, a.ProjectId), out var s) ? s : 0 })
+                .ToList();
         }
 
         private async Task<ICollection<ProjectResponse>> GetActiveProjectsForSpecialistAsync(int userId)

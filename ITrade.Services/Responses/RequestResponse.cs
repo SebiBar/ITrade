@@ -12,6 +12,7 @@
         string ProjectName,
         string RequestType,
         bool? Accepted,
-        DateTime CreatedAt
+        DateTime CreatedAt,
+        double? MatchScore
     );
 }
