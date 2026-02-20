@@ -1,5 +1,6 @@
 import { useUser } from '../context';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui';
 
 export default function DashboardPage() {
     const { currentUser, logout } = useUser();
@@ -21,12 +22,9 @@ export default function DashboardPage() {
             <p className="text-slate-500 m-0 text-sm">
                 Role: {currentUser?.role}
             </p>
-            <button
-                onClick={handleLogout}
-                className="mt-2 px-6 py-2.5 bg-white/[0.06] border border-white/10 rounded-lg text-slate-400 text-sm cursor-pointer font-medium transition-all hover:bg-white/10 hover:text-slate-300"
-            >
+            <Button variant="ghost" onClick={handleLogout} className="mt-2">
                 Sign out
-            </button>
+            </Button>
         </div>
     );
 }
