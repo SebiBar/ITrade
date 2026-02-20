@@ -1,15 +1,33 @@
 import { type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider, useUser } from './context';
+import { Navbar } from './components/navbar';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
+import RequestsPage from './pages/RequestsPage';
+import SettingsPage from './pages/SettingsPage';
+
+/** Layout for authenticated pages — renders the Navbar above the page content */
+function ProtectedLayout({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <Navbar />
+      <div className="pt-14">{children}</div>
+    </>
+  );
+}
 
 /** Redirects unauthenticated users to /login */
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { currentUser, isLoading } = useUser();
   if (isLoading) return null; // or a global spinner
-  return currentUser ? <>{children}</> : <Navigate to="/login" replace />;
+  return currentUser ? (
+    <ProtectedLayout>{children}</ProtectedLayout>
+  ) : (
+    <Navigate to="/login" replace />
+  );
 }
 
 /** Redirects already-authenticated users away from auth pages */
@@ -44,6 +62,30 @@ function AppRoutes() {
         element={
           <PrivateRoute>
             <DashboardPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <ProfilePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/requests"
+        element={
+          <PrivateRoute>
+            <RequestsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <PrivateRoute>
+            <SettingsPage />
           </PrivateRoute>
         }
       />
