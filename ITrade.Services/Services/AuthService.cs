@@ -123,13 +123,13 @@ namespace ITrade.Services.Services
             }
         }
 
-        public async Task ForgotPasswordAsync(string email)
+        public async Task ForgotPasswordAsync(ForgotPasswordRequest request)
         {
-            ValidateEmail(email);
+            ValidateEmail(request.Email);
 
             var user = await context.Users
-                .FirstOrDefaultAsync(u => u.Email == email)
-                ?? throw new ArgumentException("User with this email does not exist.", nameof(email));
+                .FirstOrDefaultAsync(u => u.Email == request.Email)
+                ?? throw new ArgumentException("User with this email does not exist.", nameof(request.Email));
 
             var token = await tokenService.CreateForgotPasswordTokenAsync(user.Id);
 
@@ -162,15 +162,15 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task ChangePasswordAsync(string newPassword)
+        public async Task ChangePasswordAsync(ChangePasswordRequest request)
         {
-            ValidatePassword(newPassword);
+            ValidatePassword(request.NewPassword);
 
             var user = await context.Users
                 .FirstOrDefaultAsync(u => u.Id == currentUserService.UserId)
-                ?? throw new ArgumentException("User not found.", nameof(newPassword));
+                ?? throw new ArgumentException("User not found.", nameof(request.NewPassword));
 
-            user.PasswordHash = hasher.HashPassword(user, newPassword);
+            user.PasswordHash = hasher.HashPassword(user, request.NewPassword);
             user.UpdatedAt = DateTime.UtcNow;
 
             await context.SaveChangesAsync();

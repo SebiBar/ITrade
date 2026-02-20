@@ -27,9 +27,7 @@ export const authService = {
      * Request password reset email
      */
     async forgotPassword(email: string): Promise<void> {
-        await apiClient.post('/auth/forgot-password', null, {
-            params: { email },
-        });
+        await apiClient.post('/auth/forgot-password', { email });
     },
 
     /**
@@ -45,9 +43,7 @@ export const authService = {
      * Change password (requires authentication)
      */
     async changePassword(newPassword: string): Promise<void> {
-        await apiClient.post('/auth/change-password', null, {
-            params: { newPassword },
-        });
+        await apiClient.post('/auth/change-password', { newPassword });
     },
 
     /**
@@ -79,7 +75,10 @@ export const authService = {
     /**
      * Logout (clear local tokens)
      */
-    logout(): void {
+    async logout(): Promise<void> {
+        await apiClient.post('/auth/logout', null, {
+            params: { refreshToken: TokenManager.getRefreshToken() },
+        });
         TokenManager.clearTokens();
     },
 };

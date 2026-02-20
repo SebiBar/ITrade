@@ -53,12 +53,12 @@ let failedQueue: Array<{
     reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: Error | null, token: string | null = null) => {
+const processQueue = (error: Error | null) => {
     failedQueue.forEach((prom) => {
         if (error) {
             prom.reject(error);
         } else {
-            prom.resolve(token);
+            prom.resolve();
         }
     });
 
@@ -116,12 +116,12 @@ apiClient.interceptors.response.use(
                     originalRequest.headers.Authorization = `Bearer ${jwt}`;
                 }
 
-                processQueue(null, jwt);
+                processQueue(null);
                 isRefreshing = false;
 
                 return apiClient(originalRequest);
             } catch (refreshError) {
-                processQueue(refreshError as Error, null);
+                processQueue(refreshError as Error);
                 isRefreshing = false;
                 TokenManager.clearTokens();
                 window.location.href = '/login';

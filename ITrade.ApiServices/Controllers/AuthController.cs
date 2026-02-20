@@ -26,9 +26,9 @@ namespace ITrade.ApiServices.Controllers
         }
 
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromQuery] string email)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest forgotPasswordRequest)
         {
-            await authService.ForgotPasswordAsync(email);
+            await authService.ForgotPasswordAsync(forgotPasswordRequest);
             return Ok();
         }
 
@@ -41,9 +41,9 @@ namespace ITrade.ApiServices.Controllers
         }
 
         [HttpPost("change-password"), Authorize]
-        public async Task<IActionResult> ChangePassword([FromQuery] string newPassword)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest changePasswordRequest)
         {
-            await authService.ChangePasswordAsync(newPassword);
+            await authService.ChangePasswordAsync(changePasswordRequest);
             return Ok();
         }
 

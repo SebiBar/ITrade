@@ -23,7 +23,7 @@ interface UserContextValue {
 
     login: (data: LoginRequest) => Promise<void>;
     register: (data: RegisterRequest) => Promise<void>;
-    logout: () => void;
+    logout: () => Promise<void>;
     clearAuthError: () => void;
 }
 
@@ -40,6 +40,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     // On mount: restore session from stored JWT
     useEffect(() => {
+        const controller = new AbortController();
+
         const restore = async () => {
             const token = TokenManager.getJwtToken();
             if (!token) {
@@ -48,15 +50,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
             }
             try {
                 const profile = await userService.getCurrentUserProfile();
-                setCurrentUser(profile.user);
+                if (!controller.signal.aborted) setCurrentUser(profile.user);
             } catch {
                 // Token is expired / invalid – clear it silently
-                TokenManager.clearTokens();
+                if (!controller.signal.aborted) TokenManager.clearTokens();
             } finally {
-                setIsLoading(false);
+                if (!controller.signal.aborted) setIsLoading(false);
             }
         };
+
         restore();
+        return () => controller.abort();
     }, []);
 
     // ── Actions ────────────────────────────────────────────────────────────────
@@ -94,10 +98,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const logout = () => {
-        authService.logout();
-        setCurrentUser(null);
-        setAuthError(null);
+    const logout = async () => {
+        try {
+            await authService.logout();
+        } finally {
+            setCurrentUser(null);
+            setAuthError(null);
+        }
     };
 
     const clearAuthError = () => setAuthError(null);
