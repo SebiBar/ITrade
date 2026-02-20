@@ -98,66 +98,100 @@ namespace ITrade.Services.Services
 
         public async Task<ICollection<UserMatchedResponse>> RecommandSpecialistsForProject(int projectId)
         {
-            // Get the project's tags
-            var projectTagIds = await context.ProjectTags
-                .Where(pt => pt.ProjectId == projectId)
-                .Select(pt => pt.TagId)
-                .ToListAsync();
+            var result = await RecommandSpecialistsForProjects([projectId]);
+            return result.TryGetValue(projectId, out var matches) ? matches : [];
+        }
 
-            if (projectTagIds.Count == 0)
+        public async Task<IDictionary<int, ICollection<UserMatchedResponse>>> RecommandSpecialistsForProjects(ICollection<int> projectIds)
+        {
+            if (projectIds.Count == 0)
             {
-                return [];
+                return new Dictionary<int, ICollection<UserMatchedResponse>>();
             }
 
-            // Find specialists who have matching profile tags
+            // 1. Single query: get all tags for all requested projects
+            var projectTagRows = await context.ProjectTags
+                .Where(pt => projectIds.Contains(pt.ProjectId))
+                .Select(pt => new { pt.ProjectId, pt.TagId })
+                .ToListAsync();
+
+            // Build per-project tag dictionaries
+            var tagsByProject = projectTagRows
+                .GroupBy(r => r.ProjectId)
+                .ToDictionary(g => g.Key, g => g.Select(r => r.TagId).ToList());
+
+            // Collect the union of all tag IDs across every project
+            var allTagIds = tagsByProject.Values.SelectMany(t => t).Distinct().ToList();
+
+            if (allTagIds.Count == 0)
+            {
+                return projectIds.ToDictionary(id => id, _ => (ICollection<UserMatchedResponse>)[]);
+            }
+
+            // 2. Single query: find all specialists whose profile tags overlap with any of those tags
             var matchingSpecialists = await context.Users
                 .Where(u => !u.IsDeleted
                     && u.UserRoleId == (int)UserRoleEnum.Specialist
-                    && u.UserProfileTags.Any(upt => projectTagIds.Contains(upt.TagId)))
+                    && u.UserProfileTags.Any(upt => allTagIds.Contains(upt.TagId)))
                 .Select(u => new
                 {
                     User = new UserResponse(u.Id, u.Username, u.UserRole.Name),
                     UserTagIds = u.UserProfileTags.Select(upt => upt.TagId).ToList(),
-                    // Count completed projects with matching tags
-                    ExperienceScore = u.AssignedProjects
+                    ExperienceTagIds = u.AssignedProjects
                         .Where(p => p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.Completed
-                            && p.ProjectTags.Any(pt => projectTagIds.Contains(pt.TagId)))
+                            && p.ProjectTags.Any(pt => allTagIds.Contains(pt.TagId)))
                         .SelectMany(p => p.ProjectTags)
-                        .Count(pt => projectTagIds.Contains(pt.TagId)),
-                    // Average rating from reviews
+                        .Where(pt => allTagIds.Contains(pt.TagId))
+                        .Select(pt => pt.TagId)
+                        .ToList(),
                     AverageRating = u.ReceivedReviews.Any()
                         ? u.ReceivedReviews.Average(r => r.Rating)
                         : 0.0
                 })
                 .ToListAsync();
 
-            var totalProjectTags = projectTagIds.Count;
+            // 3. In-memory: score each specialist per project and build the result dictionary
+            var result = new Dictionary<int, ICollection<UserMatchedResponse>>();
 
-            // Calculate match percentage and sort
-            var scoredSpecialists = matchingSpecialists
-                .Select(s =>
+            foreach (var projectId in projectIds)
+            {
+                if (!tagsByProject.TryGetValue(projectId, out var projectTagIds) || projectTagIds.Count == 0)
                 {
-                    var matchingTagCount = s.UserTagIds.Intersect(projectTagIds).Count();
-                    var matchPercentage = totalProjectTags > 0
-                        ? (double)matchingTagCount / totalProjectTags * 100
-                        : 0;
+                    result[projectId] = [];
+                    continue;
+                }
 
-                    return new
+                var totalProjectTags = projectTagIds.Count;
+
+                var scored = matchingSpecialists
+                    .Select(s =>
                     {
-                        s.User,
-                        MatchPercentage = matchPercentage,
-                        s.ExperienceScore,
-                        s.AverageRating
-                    };
-                })
-                .OrderByDescending(s => s.MatchPercentage)
-                .ThenByDescending(s => s.ExperienceScore)
-                .ThenByDescending(s => s.AverageRating)
-                .Take(MaxRecommendations)
-                .Select(s => new UserMatchedResponse(s.User, Math.Round(s.MatchPercentage, 1)))
-                .ToList();
+                        var matchingTagCount = s.UserTagIds.Intersect(projectTagIds).Count();
+                        if (matchingTagCount == 0) return null;
 
-            return scoredSpecialists;
+                        var matchPercentage = (double)matchingTagCount / totalProjectTags * 100;
+                        var experienceScore = s.ExperienceTagIds.Count(t => projectTagIds.Contains(t));
+
+                        return new
+                        {
+                            s.User,
+                            MatchPercentage = matchPercentage,
+                            ExperienceScore = experienceScore,
+                            s.AverageRating
+                        };
+                    })
+                    .Where(s => s != null)
+                    .OrderByDescending(s => s!.MatchPercentage)
+                    .ThenByDescending(s => s!.ExperienceScore)
+                    .ThenByDescending(s => s!.AverageRating)
+                    .Take(MaxRecommendations)
+                    .Select(s => new UserMatchedResponse(s!.User, Math.Round(s.MatchPercentage, 1)))
+                    .ToList();
+
+                result[projectId] = scored;
+            }
+
+            return result;
         }
     }
 }

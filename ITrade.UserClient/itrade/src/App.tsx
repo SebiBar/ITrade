@@ -6,6 +6,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import ProjectDetailPage from './pages/ProjectDetailPage';
+import UserPublicProfilePage from './pages/UserPublicProfilePage';
 import RequestsPage from './pages/RequestsPage';
 import SettingsPage from './pages/SettingsPage';
 
@@ -70,6 +72,22 @@ function AppRoutes() {
         element={
           <PrivateRoute>
             <ProfilePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/projects/:projectId"
+        element={
+          <PrivateRoute>
+            <ProjectDetailPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/users/:userId"
+        element={
+          <PrivateRoute>
+            <UserPublicProfilePage />
           </PrivateRoute>
         }
       />

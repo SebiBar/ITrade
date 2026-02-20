@@ -182,13 +182,14 @@ namespace ITrade.Services.Services
                 ))
                 .ToListAsync();
 
-            // Get recommended specialists for each open project
-            var result = new List<ProjectWithMatchesResponse>();
-            foreach (var project in openProjects)
-            {
-                var recommendedSpecialists = await matchingService.RecommandSpecialistsForProject(project.Id);
-                result.Add(new ProjectWithMatchesResponse(project, recommendedSpecialists));
-            }
+            // Batch-fetch recommended specialists for all open projects in a single pass
+            var projectIds = openProjects.Select(p => p.Id).ToList();
+            var matchesByProject = await matchingService.RecommandSpecialistsForProjects(projectIds);
+
+            var result = openProjects
+                .Select(p => new ProjectWithMatchesResponse(
+                    p, matchesByProject.TryGetValue(p.Id, out var m) ? m : []))
+                .ToList();
 
             return result;
         }

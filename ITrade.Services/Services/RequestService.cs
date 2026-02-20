@@ -193,6 +193,7 @@ namespace ITrade.Services.Services
                 request.Accepted = false;
             }
 
+            await context.SaveChangesAsync();
         }
 
         private void ValidateProjectRequestReq(RequestReq projectRequest)

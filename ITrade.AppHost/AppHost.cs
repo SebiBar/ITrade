@@ -1,7 +1,5 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Remove .WithDataVolume() for ephemeral storage
-// Add it back for persistance
 var db = builder.AddPostgres("db")
     .WithDataVolume()
     .WithPgWeb()

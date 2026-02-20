@@ -6,5 +6,6 @@ namespace ITrade.Services.Interfaces
     {
         Task<ICollection<ProjectMatchedResponse>> RecommandProjectsForSpecialist();
         Task<ICollection<UserMatchedResponse>> RecommandSpecialistsForProject(int projectId);
+        Task<IDictionary<int, ICollection<UserMatchedResponse>>> RecommandSpecialistsForProjects(ICollection<int> projectIds);
     }
 }

@@ -25,7 +25,7 @@ namespace ITrade.ApiServices.Helpers
 
         public async Task SeedDevDataAsync(Context database)
         {
-            // Only seed if no users exist (beyond system/admin accounts)
+            //Only seed if no users exist (beyond system/admin accounts)
             if (await database.Users.CountAsync() > 0)
             {
                 return;
