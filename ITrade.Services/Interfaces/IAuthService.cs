@@ -8,6 +8,7 @@ namespace ITrade.Services.Interfaces
         Task RegisterAsync(RegisterRequest request);
         Task VerifyEmailAsync(string emailedToken);
         Task<LoginResponse> LoginAsync(LoginRequest request);
+        Task LogoutAsync(string refreshToken);
         Task ForgotPasswordAsync(string email);
         Task ResolveForgotPasswordAsync(ResolveForgotPasswordRequest resolveForgotPasswordRequest);
         Task ChangePasswordAsync(string newPassword);

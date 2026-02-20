@@ -53,6 +53,13 @@ namespace ITrade.ApiServices.Controllers
             return Ok(await authService.LoginAsync(loginRequest));
         }
 
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromQuery] string refreshToken)
+        {
+            await authService.LogoutAsync(refreshToken);
+            return Ok();
+        }
+
         [HttpPost("refresh-tokens")]
         public async Task<IActionResult> RefreshTokens([FromQuery] string refreshToken)
         {             

@@ -102,6 +102,27 @@ namespace ITrade.Services.Services
             );
         }
 
+        public async Task LogoutAsync(string refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                throw new ArgumentException("Refresh token is required.", nameof(refreshToken));
+            }
+
+            var hashedToken = tokenService.HashTokenString(refreshToken);
+
+            var token = await context.Tokens
+                .Where(t => t.TokenStringHash == hashedToken)
+                .Where(t => t.TokenTypeId == (int)TokenTypeEnum.Refresh)
+                .FirstOrDefaultAsync();
+
+            if (token != null)
+            {
+                context.Tokens.Remove(token);
+                await context.SaveChangesAsync();
+            }
+        }
+
         public async Task ForgotPasswordAsync(string email)
         {
             ValidateEmail(email);
