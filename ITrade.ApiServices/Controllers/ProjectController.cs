@@ -11,6 +11,12 @@ namespace ITrade.ApiServices.Controllers
         ITagService tagService
         ) : ControllerBase
     {
+        [HttpGet]
+        public async Task<IActionResult> GetProjects()
+        {
+            return Ok(await projectService.GetUserProjectsAsync());
+        }
+
         [HttpGet("{projectId:int}")]
         public async Task<IActionResult> GetProject([FromRoute] int projectId)
         {
@@ -28,6 +34,13 @@ namespace ITrade.ApiServices.Controllers
             [FromRoute] int projectId, [FromBody] ProjectUpdateRequest projectRequest)
         {
             await projectService.UpdateProjectAsync(projectId, projectRequest);
+            return Ok();
+        }
+
+        [HttpDelete("{projectId:int}/worker")]
+        public async Task<IActionResult> UnassignWorker([FromRoute] int projectId)
+        {
+            await projectService.UnassignProjectWorker(projectId);
             return Ok();
         }
 

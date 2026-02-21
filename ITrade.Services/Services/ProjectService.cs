@@ -13,6 +13,66 @@ namespace ITrade.Services.Services
         ICurrentUserService currentUserService
     ) : IProjectService
     {
+        public async Task<ICollection<ProjectResponse>> GetUserProjectsAsync()
+        {
+            if (currentUserService.UserRole == UserRoleEnum.Client)
+            {
+                return await context.Projects
+                    .Where(p => p.OwnerId == currentUserService.UserId)
+                    .Select(p => new ProjectResponse(
+                        p.Id,
+                        p.Name,
+                        p.Description,
+                        p.OwnerId,
+                        p.Owner.Username,
+                        p.WorkerId,
+                        p.Worker != null ? p.Worker.Username : null,
+                        p.Deadline,
+                        p.ProjectStatusTypeId,
+                        p.ProjectStatusType.Name,
+                        p.ProjectTags
+                            .Select(pt => new ProjectTagResponse(
+                                pt.Id,
+                                pt.Tag.Name
+                            ))
+                            .ToList(),
+                        p.CreatedAt,
+                        p.UpdatedAt
+                    ))
+                    .ToListAsync();
+            }
+            else if (currentUserService.UserRole == UserRoleEnum.Specialist)
+            {
+                return await context.Projects
+                    .Where(p => p.WorkerId == currentUserService.UserId)
+                    .Select(p => new ProjectResponse(
+                        p.Id,
+                        p.Name,
+                        p.Description,
+                        p.OwnerId,
+                        p.Owner.Username,
+                        p.WorkerId,
+                        p.Worker != null ? p.Worker.Username : null,
+                        p.Deadline,
+                        p.ProjectStatusTypeId,
+                        p.ProjectStatusType.Name,
+                        p.ProjectTags
+                            .Select(pt => new ProjectTagResponse(
+                                pt.Id,
+                                pt.Tag.Name
+                            ))
+                            .ToList(),
+                        p.CreatedAt,
+                        p.UpdatedAt
+                    ))
+                    .ToListAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException("Only clients and specialists can have projects.");
+            }
+        }
+
         public async Task<ProjectResponse> GetProjectAsync(int projectId)
         {
             return await context.Projects
@@ -53,7 +113,7 @@ namespace ITrade.Services.Services
             {
                 Name = projectRequest.Name,
                 Description = projectRequest.Description,
-                Deadline = projectRequest.Deadline,
+                Deadline = DateTime.SpecifyKind(projectRequest.Deadline, DateTimeKind.Utc),
                 OwnerId = currentUserService.UserId
             };
 
@@ -101,7 +161,7 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<List<ProjectResponse>> GetDeletedProjectsAsync()
+        public async Task<ICollection<ProjectResponse>> GetDeletedProjectsAsync()
         {
             var query = context.Projects
                 .IgnoreQueryFilters()
@@ -192,14 +252,36 @@ namespace ITrade.Services.Services
             }
             if (projectRequest.Deadline != null)
             {
-                project.Deadline = (DateTime)projectRequest.Deadline;
+                project.Deadline = DateTime.SpecifyKind((DateTime)projectRequest.Deadline, DateTimeKind.Utc);
             }
             if (projectRequest.Status != null)
             {
+                if (project.WorkerId != null && projectRequest.Status == ProjectStatusTypeEnum.Hiring)
+                {
+                    throw new InvalidOperationException("Cannot set project status to Hiring when a worker is assigned.");
+                }
                 project.ProjectStatusTypeId = (int)projectRequest.Status;
             }
 
             project.UpdatedAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+        }
+
+        public async Task UnassignProjectWorker(int projectId)
+        {
+            var project = await context.Projects
+                .FirstOrDefaultAsync(p => p.Id == projectId)
+                ?? throw new KeyNotFoundException("Project not found.");
+
+            if (project.OwnerId != currentUserService.UserId)
+            {
+                throw new InvalidOperationException("You do not have permission to update this project.");
+            }
+
+            project.WorkerId = null;
+            project.UpdatedAt = DateTime.UtcNow;
+            project.ProjectStatusTypeId = (int)ProjectStatusTypeEnum.OnHold;
+
             await context.SaveChangesAsync();
         }
 

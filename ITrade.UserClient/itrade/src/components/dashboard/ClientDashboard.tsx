@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { dashboardService } from '../../api';
+import { dashboardService, requestService } from '../../api';
+import { ProjectRequestType } from '../../types';
 import type { DashboardClientResponse, SearchResponse } from '../../types';
 import DashboardSection from './DashboardSection';
 import RequestCard from './RequestCard';
@@ -20,6 +21,29 @@ export default function ClientDashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
+    const [invitingIds, setInvitingIds] = useState<Set<string>>(new Set());
+    const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
+
+    const handleInvite = useCallback(async (userId: number, projectId: number) => {
+        const key = `${projectId}-${userId}`;
+        setInvitingIds(prev => new Set(prev).add(key));
+        try {
+            await requestService.createRequest({
+                receiverId: userId,
+                projectId,
+                requestType: ProjectRequestType.Invitation,
+            });
+            setInvitedIds(prev => new Set(prev).add(key));
+        } catch {
+            // silent
+        } finally {
+            setInvitingIds(prev => {
+                const next = new Set(prev);
+                next.delete(key);
+                return next;
+            });
+        }
+    }, []);
 
     const fetchDashboard = useCallback(async () => {
         setIsLoading(true);
@@ -156,12 +180,18 @@ export default function ClientDashboard() {
                                             </p>
                                         ) : (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                                {recommendedSpecialists.map(match => (
-                                                    <MatchedSpecialistCard
-                                                        key={match.user.id}
-                                                        match={match}
-                                                    />
-                                                ))}
+                                                {recommendedSpecialists.map(match => {
+                                                    const key = `${project.id}-${match.user.id}`;
+                                                    return (
+                                                        <MatchedSpecialistCard
+                                                            key={match.user.id}
+                                                            match={match}
+                                                            onInvite={(userId) => handleInvite(userId, project.id)}
+                                                            isInviting={invitingIds.has(key)}
+                                                            isInvited={invitedIds.has(key)}
+                                                        />
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>

@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 import UserPublicProfilePage from './pages/UserPublicProfilePage';
 import RequestsPage from './pages/RequestsPage';
+import MyProjectsPage from './pages/MyProjectsPage';
 import SettingsPage from './pages/SettingsPage';
 
 /** Layout for authenticated pages — renders the Navbar above the page content */
@@ -96,6 +97,14 @@ function AppRoutes() {
         element={
           <PrivateRoute>
             <RequestsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/my-projects"
+        element={
+          <PrivateRoute>
+            <MyProjectsPage />
           </PrivateRoute>
         }
       />

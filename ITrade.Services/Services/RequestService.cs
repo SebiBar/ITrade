@@ -236,6 +236,7 @@ namespace ITrade.Services.Services
                 }
 
                 request.Accepted = true;
+                project.ProjectStatusTypeId = (int)ProjectStatusTypeEnum.InProgress;
             }
             else
             {

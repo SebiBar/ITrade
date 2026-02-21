@@ -4,6 +4,14 @@ import type { ProjectResponse, ProjectTagResponse } from '../types/responses';
 
 export const projectService = {
     /**
+     * Get all projects for user
+     */
+    async getUserProjects(): Promise<ProjectResponse[]> {
+        const response = await apiClient.get<ProjectResponse[]>('/projects');
+        return response.data;
+    },
+
+    /**
      * Get project by ID
      */
     async getProject(projectId: number): Promise<ProjectResponse> {
@@ -29,6 +37,13 @@ export const projectService = {
         data: ProjectUpdateRequest
     ): Promise<void> {
         await apiClient.put(`/projects/${projectId}`, data);
+    },
+
+    /**
+     * Unassign a worker (Client only)
+     */
+    async unassignWorker(projectId: number): Promise<void> {
+        await apiClient.delete(`/projects/${projectId}/worker`);
     },
 
     /**

@@ -5,11 +5,13 @@ namespace ITrade.Services.Interfaces
 {
     public interface IProjectService
     {
+        Task<ICollection<ProjectResponse>> GetUserProjectsAsync();
         Task<ProjectResponse> GetProjectAsync(int projectId);
         Task<int> CreateProjectAsync(ProjectRequest projectRequest);
         Task UpdateProjectAsync(int projectId, ProjectUpdateRequest projectRequest);
+        Task UnassignProjectWorker(int projectId);
         Task SoftDeleteProjectAsync(int projectId);
-        Task<List<ProjectResponse>> GetDeletedProjectsAsync();
+        Task<ICollection<ProjectResponse>> GetDeletedProjectsAsync();
         Task RestoreProjectAsync(int projectId);
         Task HardDeleteProjectAsync(int projectId);
     }

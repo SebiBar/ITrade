@@ -9,6 +9,7 @@ interface UserMenuProps {
 
 const MENU_ITEMS = [
     { label: 'Profile', path: '/profile' },
+    { label: 'My Projects', path: '/my-projects' },
     { label: 'Requests', path: '/requests' },
     { label: 'Settings', path: '/settings' },
 ] as const;
