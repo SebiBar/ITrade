@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { requestService } from '../../api';
 import type { RequestResponse } from '../../types';
 
@@ -9,6 +10,7 @@ interface SentRequestCardProps {
 
 /** Card for a sent request (invitation or application) with a Delete action */
 export default function SentRequestCard({ request, onDeleted }: SentRequestCardProps) {
+    const navigate = useNavigate();
     const [isDeleting, setIsDeleting] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -34,14 +36,19 @@ export default function SentRequestCard({ request, onDeleted }: SentRequestCardP
             : `You applied to`;
 
     return (
-        <div className="flex items-center justify-between gap-4 px-5 py-4 bg-white/[0.03] border border-white/[0.06] rounded-xl hover:bg-white/[0.05] transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 px-4 sm:px-5 py-4 bg-white/[0.03] border border-white/[0.06] rounded-xl hover:bg-white/[0.05] transition-colors">
             <div className="flex flex-col gap-1 min-w-0">
-                <p className="text-sm text-slate-300 m-0 truncate">
+                <p className="text-sm text-slate-300 m-0 sm:truncate">
                     <span className="text-slate-500">{label}</span>{' '}
-                    <span className="font-semibold text-slate-200">{request.projectName}</span>
+                    <button
+                        onClick={() => navigate(`/projects/${request.projectId}`)}
+                        className="font-semibold text-slate-200 hover:text-blue-400 bg-transparent border-none p-0 cursor-pointer transition-colors text-left"
+                    >
+                        {request.projectName}
+                    </button>
                 </p>
                 {request.message && (
-                    <p className="text-xs text-slate-500 m-0 truncate italic">"{request.message}"</p>
+                    <p className="text-xs text-slate-500 m-0 sm:truncate italic">"{request.message}"</p>
                 )}
                 <div className="flex items-center gap-2">
                     <p className="text-[0.65rem] text-slate-600 m-0">{formatDate(request.createdAt)}</p>
@@ -53,12 +60,12 @@ export default function SentRequestCard({ request, onDeleted }: SentRequestCardP
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
                 {isResolved ? (
                     <span
                         className={`px-3 py-1.5 text-xs font-semibold rounded-lg ${wasAccepted
-                                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
-                                : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                            ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                            : 'bg-red-500/10 text-red-400 border border-red-500/20'
                             }`}
                     >
                         {wasAccepted ? 'Accepted' : 'Declined'}

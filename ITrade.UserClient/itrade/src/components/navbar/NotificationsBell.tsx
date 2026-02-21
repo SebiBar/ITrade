@@ -82,7 +82,7 @@ export default function NotificationsBell() {
 
             {/* Dropdown */}
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-[#0f1f3d] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                <div className="fixed inset-x-0 top-14 mx-2 sm:absolute sm:inset-auto sm:right-0 sm:top-auto sm:mx-0 sm:mt-2 w-auto sm:w-80 bg-[#0f1f3d] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
                     <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
                         <h3 className="text-white font-semibold text-sm">Notifications</h3>
                         {unreadCount > 0 && (

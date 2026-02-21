@@ -7,8 +7,7 @@ interface UserMenuProps {
     onLogout: () => void;
 }
 
-const MENU_ITEMS = [
-    { label: 'Profile', path: '/profile' },
+const STATIC_MENU_ITEMS = [
     { label: 'My Projects', path: '/my-projects' },
     { label: 'Requests', path: '/requests' },
     { label: 'Settings', path: '/settings' },
@@ -20,6 +19,10 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
     const ref = useRef<HTMLDivElement>(null);
 
     const initials = user.username.slice(0, 2).toUpperCase();
+    const menuItems = [
+        { label: 'Profile', path: `/users/${user.id}` },
+        ...STATIC_MENU_ITEMS,
+    ];
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -64,7 +67,7 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
 
                     {/* Nav items */}
                     <div className="py-1">
-                        {MENU_ITEMS.map(({ label, path }) => (
+                        {menuItems.map(({ label, path }) => (
                             <button
                                 key={label}
                                 onClick={() => handleNavigate(path)}

@@ -5,9 +5,8 @@ import { Navbar } from './components/navbar';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
-import ProfilePage from './pages/ProfilePage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
-import UserPublicProfilePage from './pages/UserPublicProfilePage';
+import ProfilePage from './pages/ProfilePage';
 import RequestsPage from './pages/RequestsPage';
 import MyProjectsPage from './pages/MyProjectsPage';
 import SettingsPage from './pages/SettingsPage';
@@ -38,6 +37,13 @@ function GuestRoute({ children }: { children: ReactNode }) {
   const { currentUser, isLoading } = useUser();
   if (isLoading) return null;
   return currentUser ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+}
+
+/** Redirects /profile to /users/:currentUserId */
+function ProfileRedirect() {
+  const { currentUser } = useUser();
+  if (!currentUser) return <Navigate to="/login" replace />;
+  return <Navigate to={`/users/${currentUser.id}`} replace />;
 }
 
 function AppRoutes() {
@@ -72,7 +78,7 @@ function AppRoutes() {
         path="/profile"
         element={
           <PrivateRoute>
-            <ProfilePage />
+            <ProfileRedirect />
           </PrivateRoute>
         }
       />
@@ -88,7 +94,7 @@ function AppRoutes() {
         path="/users/:userId"
         element={
           <PrivateRoute>
-            <UserPublicProfilePage />
+            <ProfilePage />
           </PrivateRoute>
         }
       />
