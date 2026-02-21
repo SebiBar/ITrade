@@ -63,6 +63,15 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
+        public async Task<bool> UserAlreadyAppliedAsync(int projectId)
+        {
+            return await context.Requests
+                .AnyAsync(r => r.ProjectId == projectId
+                    && r.RequestTypeId == (int)ProjectRequestTypeEnum.Application
+                    && r.SenderId == currentUserService.UserId
+                    && r.Accepted != true);
+        }
+
         public async Task<UserRequestsResponse> GetUserRequestsAsync()
         {
             if (currentUserService.UserRole == UserRoleEnum.Client)
@@ -323,6 +332,11 @@ namespace ITrade.Services.Services
             var project = await context.Projects
                 .FirstOrDefaultAsync(p => p.Id == projectRequest.ProjectId)
                 ?? throw new ArgumentException("Project not found.", nameof(projectRequest.ProjectId));
+
+            if (project.ProjectStatusTypeId != (int)ProjectStatusTypeEnum.Hiring)
+            {
+                throw new InvalidOperationException("You can only apply to hiring projects.");
+            }
 
             if (project.OwnerId == currentUserService.UserId)
             {

@@ -20,6 +20,15 @@ export const requestService = {
     },
 
     /**
+     * Check if user already applied to project
+     */
+    async hasApplied(projectId: number): Promise<boolean> {
+        const response = await apiClient.get<boolean>(
+            `/requests/has-applied/${projectId}`);
+        return response.data;
+    },
+
+    /**
      * Resolve a request (accept or reject)
      */
     async resolveRequest(requestId: number, accepted: boolean): Promise<void> {

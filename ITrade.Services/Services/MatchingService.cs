@@ -168,10 +168,13 @@ namespace ITrade.Services.Services
                 .FirstOrDefaultAsync();
 
             // Find open projects (Hiring status, no worker assigned) that match specialist's tags
+            // Exclude projects the specialist has already applied to (using subquery for efficiency)
             var matchingProjects = await context.Projects
                 .Where(p => !p.IsDeleted
                     && p.WorkerId == null
                     && p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.Hiring
+                    && !p.Requests.Any(r => r.SenderId == userId
+                        && r.RequestTypeId == (int)ProjectRequestTypeEnum.Application)
                     && p.ProjectTags.Any(pt => specialistTagIds.Contains(pt.TagId)))
                 .Select(p => new
                 {
@@ -253,6 +256,17 @@ namespace ITrade.Services.Services
                 return projectIds.ToDictionary(id => id, _ => (ICollection<UserMatchedResponse>)[]);
             }
 
+            // Get specialists already invited to each project
+            var invitedSpecialistsByProject = await context.Requests
+                .Where(r => projectIds.Contains(r.ProjectId)
+                    && r.RequestTypeId == (int)ProjectRequestTypeEnum.Invitation)
+                .Select(r => new { r.ProjectId, SpecialistId = r.ReceiverId })
+                .ToListAsync();
+
+            var invitedSpecialistsLookup = invitedSpecialistsByProject
+                .GroupBy(r => r.ProjectId)
+                .ToDictionary(g => g.Key, g => g.Select(r => r.SpecialistId).ToHashSet());
+
             // 2. Single query: find all specialists whose profile tags overlap with any of those tags
             // Note: Use ToList() instead of ToHashSet()/ToDictionary() as EF Core cannot translate those
             var matchingSpecialistsRaw = await context.Users
@@ -298,7 +312,11 @@ namespace ITrade.Services.Services
                     continue;
                 }
 
+                // Get specialists already invited to this project
+                var invitedSpecialists = invitedSpecialistsLookup.GetValueOrDefault(projectId) ?? [];
+
                 var scored = matchingSpecialists
+                    .Where(s => !invitedSpecialists.Contains(s.User.Id))
                     .Select(s =>
                     {
                         var score = CalculateMatchScore(

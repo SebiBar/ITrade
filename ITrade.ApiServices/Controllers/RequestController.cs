@@ -20,6 +20,12 @@ namespace ITrade.ApiServices.Controllers
             return Ok(await requestService.CreateRequestAsync(projectRequest));
         }
 
+        [HttpGet("has-applied/{projectId:int}")]
+        public async Task<IActionResult> UserAlreadyApplied([FromRoute] int projectId)
+        {
+            return Ok(await requestService.UserAlreadyAppliedAsync(projectId));
+        }
+
         [HttpPost("{requestId:int}")]
         public async Task<IActionResult> ResolveRequest(
             [FromRoute] int requestId, [FromQuery] bool accepted)
