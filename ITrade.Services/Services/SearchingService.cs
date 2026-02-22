@@ -197,6 +197,72 @@ namespace ITrade.Services.Services
             return (results, totalCount);
         }
 
+        public async Task<SearchResponse> SearchDeletedAsync(string? query)
+        {
+            var searchTerm = query?.ToLower() ?? "";
+
+            var projectQuery = context.Projects
+                .IgnoreQueryFilters()
+                .Where(p => p.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                projectQuery = projectQuery.Where(p => p.Name.ToLower().Contains(searchTerm));
+            }
+
+            var totalProjects = await projectQuery.CountAsync();
+
+            var projects = await projectQuery
+                .OrderByDescending(p => p.UpdatedAt)
+                .Select(p => new ProjectResponse(
+                    p.Id,
+                    p.Name,
+                    p.Description,
+                    p.OwnerId,
+                    p.Owner.Username,
+                    p.WorkerId,
+                    p.Worker != null ? p.Worker.Username : null,
+                    p.Deadline,
+                    p.ProjectStatusTypeId,
+                    p.ProjectStatusType.Name,
+                    p.ProjectTags
+                        .Select(pt => new ProjectTagResponse(pt.Id, pt.Tag.Name))
+                        .ToList(),
+                    p.CreatedAt,
+                    p.UpdatedAt
+                ))
+                .ToListAsync();
+
+            var userQuery = context.Users
+                .IgnoreQueryFilters()
+                .Where(u => u.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                userQuery = userQuery.Where(u => u.Username.ToLower().Contains(searchTerm));
+            }
+
+            var totalUsers = await userQuery.CountAsync();
+
+            var users = await userQuery
+                .OrderByDescending(u => u.UpdatedAt)
+                .Select(u => new UserResponse(
+                    u.Id,
+                    u.Username,
+                    u.UserRole.Name
+                ))
+                .ToListAsync();
+
+            return new SearchResponse(
+                projects,
+                users,
+                totalProjects,
+                totalUsers,
+                1,
+                totalProjects + totalUsers
+            );
+        }
+
         private static IQueryable<DB.Entities.Project> ApplyProjectSorting(
             IQueryable<DB.Entities.Project> query,
             SearchSortBy sortBy,

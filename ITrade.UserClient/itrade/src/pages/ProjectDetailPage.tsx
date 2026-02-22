@@ -25,6 +25,7 @@ export default function ProjectDetailPage() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showSpecialistsPanel, setShowSpecialistsPanel] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isHardDeleting, setIsHardDeleting] = useState(false);
     const [isUnassigning, setIsUnassigning] = useState(false);
     const [isApplying, setIsApplying] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
@@ -50,6 +51,7 @@ export default function ProjectDetailPage() {
 
     const isOwner = currentUser?.id === project?.ownerId;
     const isSpecialist = currentUser?.role === 'Specialist';
+    const isAdmin = currentUser?.role === 'Admin';
 
     // Check if specialist has already applied
     useEffect(() => {
@@ -81,6 +83,24 @@ export default function ProjectDetailPage() {
             setActionError('Failed to delete project.');
         } finally {
             setIsDeleting(false);
+        }
+    };
+
+    const handleHardDelete = async () => {
+        if (!project) return;
+        const confirmed = window.confirm(
+            `PERMANENTLY delete "${project.name}"? This cannot be undone.`
+        );
+        if (!confirmed) return;
+        setIsHardDeleting(true);
+        setActionError(null);
+        try {
+            await projectService.hardDeleteProject(project.id);
+            navigate(-1);
+        } catch {
+            setActionError('Failed to permanently delete project.');
+        } finally {
+            setIsHardDeleting(false);
         }
     };
 
@@ -196,14 +216,17 @@ export default function ProjectDetailPage() {
                 <ProjectActions
                     isOwner={isOwner}
                     isSpecialist={isSpecialist}
+                    isAdmin={isAdmin}
                     hasWorker={!!project.workerId}
                     statusType={project.projectStatusType}
                     isDeleting={isDeleting}
+                    isHardDeleting={isHardDeleting}
                     isUnassigning={isUnassigning}
                     isApplying={isApplying}
                     hasApplied={hasApplied}
                     onEdit={() => setShowEditModal(true)}
                     onDelete={handleDelete}
+                    onHardDelete={handleHardDelete}
                     onUnassign={handleUnassign}
                     onShowSpecialists={() => setShowSpecialistsPanel(true)}
                     onApply={handleApply}

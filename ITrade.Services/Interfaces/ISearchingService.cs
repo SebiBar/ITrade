@@ -6,5 +6,6 @@ namespace ITrade.Services.Interfaces
     public interface ISearchingService
     {
         Task<SearchResponse> SearchAsync(SearchRequest request);
+        Task<SearchResponse> SearchDeletedAsync(string? query);
     }
 }

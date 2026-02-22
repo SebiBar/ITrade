@@ -13,15 +13,21 @@ const STATIC_MENU_ITEMS = [
     { label: 'Settings', path: '/settings' },
 ] as const;
 
+const ADMIN_HIDDEN_ITEMS = ['My Projects', 'Requests'];
+
 export default function UserMenu({ user, onLogout }: UserMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const ref = useRef<HTMLDivElement>(null);
 
+    const isAdmin = user.role === 'Admin';
     const initials = user.username.slice(0, 2).toUpperCase();
+    const filteredStaticItems = isAdmin
+        ? STATIC_MENU_ITEMS.filter(item => !ADMIN_HIDDEN_ITEMS.includes(item.label))
+        : STATIC_MENU_ITEMS;
     const menuItems = [
         { label: 'Profile', path: `/users/${user.id}` },
-        ...STATIC_MENU_ITEMS,
+        ...filteredStaticItems,
     ];
 
     // Close dropdown on outside click

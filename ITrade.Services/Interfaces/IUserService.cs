@@ -10,6 +10,7 @@ namespace ITrade.Services.Interfaces
         Task<int> CreateProfileLinkAsync(string url);
         Task RemoveProfileLinkAsync(int profileLinkId);
         Task SoftDeleteAccountAsync();
+        Task RestoreUserAsync(int userId);
         Task HardDeleteUserAsync(int userId);
     }
 }

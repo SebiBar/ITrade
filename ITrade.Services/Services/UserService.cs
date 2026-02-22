@@ -176,6 +176,23 @@ namespace ITrade.Services.Services
             await context.SaveChangesAsync();
         }
 
+        public async Task RestoreUserAsync(int userId)
+        {
+            if (currentUserService.UserRole != UserRoleEnum.Admin)
+                throw new UnauthorizedAccessException("Only admins can restore users.");
+
+            var user = await context.Users
+                .IgnoreQueryFilters()
+                .Where(u => u.Id == userId)
+                .FirstOrDefaultAsync()
+                ?? throw new KeyNotFoundException("Deleted User not found.");
+
+            user.IsDeleted = false;
+            user.UpdatedAt= DateTime.UtcNow;
+
+            await context.SaveChangesAsync();
+        }
+
         public async Task HardDeleteUserAsync(int userId)
         {
             var user = await context.Users

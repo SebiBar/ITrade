@@ -42,6 +42,17 @@ export const discoveryService = {
         });
         return response.data;
     },
+
+    /**
+     * Search deleted (Admin only)
+     */
+    async searchDeleted(params: string): Promise<SearchResponse> {
+        const response = await apiClient.get<SearchResponse>(
+            '/discovery/search/deleted',
+            { params: { query: params } }
+        );
+        return response.data;
+    }
 };
 
 export default discoveryService;

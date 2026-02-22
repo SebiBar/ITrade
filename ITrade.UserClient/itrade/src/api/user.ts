@@ -91,6 +91,13 @@ export const userService = {
     },
 
     /**
+     * Restore a soft-deleted user (Admin only)
+     */
+    async restoreUser(userId: number): Promise<void> {
+        await apiClient.post(`/user/${userId}/restore`);
+    },
+
+    /**
      * Ping
     */
     async ping(): Promise<string> {

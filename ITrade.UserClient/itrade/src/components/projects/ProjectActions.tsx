@@ -1,14 +1,17 @@
 interface ProjectActionsProps {
     isOwner: boolean;
     isSpecialist: boolean;
+    isAdmin: boolean;
     hasWorker: boolean;
     statusType: string;
     isDeleting: boolean;
+    isHardDeleting: boolean;
     isUnassigning: boolean;
     isApplying: boolean;
     hasApplied: boolean;
     onEdit: () => void;
     onDelete: () => void;
+    onHardDelete: () => void;
     onUnassign: () => void;
     onShowSpecialists: () => void;
     onApply: () => void;
@@ -17,14 +20,17 @@ interface ProjectActionsProps {
 export default function ProjectActions({
     isOwner,
     isSpecialist,
+    isAdmin,
     hasWorker,
     statusType,
     isDeleting,
+    isHardDeleting,
     isUnassigning,
     isApplying,
     hasApplied,
     onEdit,
     onDelete,
+    onHardDelete,
     onUnassign,
     onShowSpecialists,
     onApply,
@@ -32,7 +38,7 @@ export default function ProjectActions({
     const canRecommend = isOwner && !hasWorker && statusType === 'Hiring';
     const canApply = isSpecialist && !hasWorker && statusType === 'Hiring';
 
-    if (!isOwner && !canApply) return null;
+    if (!isOwner && !canApply && !isAdmin) return null;
 
     return (
         <div className="flex flex-col gap-3 p-5 bg-white/[0.03] border border-white/[0.06] rounded-xl">
@@ -80,14 +86,25 @@ export default function ProjectActions({
                     </>
                 )}
 
+                {/* Admin permanent delete */}
+                {isAdmin && (
+                    <button
+                        onClick={onHardDelete}
+                        disabled={isHardDeleting}
+                        className="px-4 py-2 text-xs font-semibold text-red-500 bg-red-500/15 border border-red-500/30 rounded-lg hover:bg-red-500/25 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isHardDeleting ? 'Deleting…' : 'Permanently Delete'}
+                    </button>
+                )}
+
                 {/* Specialist apply */}
                 {canApply && (
                     <button
                         onClick={onApply}
                         disabled={isApplying || hasApplied}
                         className={`px-5 py-2.5 text-sm font-semibold rounded-lg border transition-all cursor-pointer disabled:cursor-not-allowed ${hasApplied
-                                ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                                : 'text-white bg-gradient-to-r from-blue-500 to-indigo-600 border-transparent hover:brightness-110 active:scale-[0.98] shadow-[0_2px_12px_rgba(79,125,255,0.3)] disabled:opacity-50'
+                            ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                            : 'text-white bg-gradient-to-r from-blue-500 to-indigo-600 border-transparent hover:brightness-110 active:scale-[0.98] shadow-[0_2px_12px_rgba(79,125,255,0.3)] disabled:opacity-50'
                             }`}
                     >
                         {hasApplied ? 'Applied' : isApplying ? 'Applying…' : 'Apply for this Project'}

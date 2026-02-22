@@ -61,17 +61,19 @@ namespace ITrade.ApiServices.Controllers
             return Ok();
         }
 
+        [HttpPost("{userId:int}/restore"), Authorize(Roles="Admin")]
+        public async Task<IActionResult> RestoreUser([FromRoute] int userId)
+        {
+            await userService.RestoreUserAsync(userId);
+            return Ok();
+        }
+
+
         [HttpDelete("{userId:int}"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> HardDeleteUser([FromRoute] int userId)
         {
             await userService.HardDeleteUserAsync(userId);
             return Ok();
-        }
-
-        [HttpGet("ping"), AllowAnonymous]
-        public async Task<IActionResult> Ping()
-        {
-            return Ok("Pong!");
         }
 
     }

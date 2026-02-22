@@ -28,5 +28,11 @@ namespace ITrade.ApiServices.Controllers
         {
             return Ok(await searchingService.SearchAsync(request));
         }
+
+        [HttpGet("search/deleted"), Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SearchDeleted([FromQuery] string? query)
+        {
+            return Ok(await searchingService.SearchDeletedAsync(query));
+        }
     }
 }

@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { dashboardService, tagService } from '../../api';
+import { useNavigate } from 'react-router-dom';
+import { dashboardService, tagService, discoveryService, userService, projectService } from '../../api';
 import type { DashboardAdminResponse, Tag, SearchResponse } from '../../types';
 import DashboardSection from './DashboardSection';
 import SearchBar from './SearchBar';
 import SearchResults from './SearchResults';
+import ProjectCard from './ProjectCard';
 
 /**
  * Dashboard view for Admin users.
@@ -14,6 +16,7 @@ import SearchResults from './SearchResults';
  *  - "Tag Management" — create / delete tags
  */
 export default function AdminDashboard() {
+    const navigate = useNavigate();
     const [data, setData] = useState<DashboardAdminResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -24,6 +27,14 @@ export default function AdminDashboard() {
     const [isCreating, setIsCreating] = useState(false);
     const [tagError, setTagError] = useState<string | null>(null);
     const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
+
+    // Deleted search state
+    const [deletedQuery, setDeletedQuery] = useState('');
+    const [isSearchingDeleted, setIsSearchingDeleted] = useState(false);
+    const [deletedResults, setDeletedResults] = useState<SearchResponse | null>(null);
+    const [deletedError, setDeletedError] = useState<string | null>(null);
+    const [restoringUserIds, setRestoringUserIds] = useState<Set<number>>(new Set());
+    const [restoringProjectIds, setRestoringProjectIds] = useState<Set<number>>(new Set());
 
     const fetchDashboard = useCallback(async () => {
         setIsLoading(true);
@@ -74,6 +85,74 @@ export default function AdminDashboard() {
             setDeletingIds(prev => {
                 const next = new Set(prev);
                 next.delete(tag.id);
+                return next;
+            });
+        }
+    };
+
+    const handleSearchDeleted = async () => {
+        const q = deletedQuery.trim();
+        if (!q) {
+            setDeletedResults(null);
+            return;
+        }
+        setIsSearchingDeleted(true);
+        setDeletedError(null);
+        try {
+            const results = await discoveryService.searchDeleted(q);
+            setDeletedResults(results);
+        } catch {
+            setDeletedError('Failed to search deleted entities.');
+        } finally {
+            setIsSearchingDeleted(false);
+        }
+    };
+
+    const handleRestoreUser = async (userId: number) => {
+        setRestoringUserIds(prev => new Set(prev).add(userId));
+        try {
+            await userService.restoreUser(userId);
+            // Remove from results
+            setDeletedResults(prev =>
+                prev
+                    ? {
+                        ...prev,
+                        users: prev.users.filter(u => u.id !== userId),
+                        totalUsers: prev.totalUsers - 1,
+                    }
+                    : prev
+            );
+        } catch {
+            setDeletedError('Failed to restore user.');
+        } finally {
+            setRestoringUserIds(prev => {
+                const next = new Set(prev);
+                next.delete(userId);
+                return next;
+            });
+        }
+    };
+
+    const handleRestoreProject = async (projectId: number) => {
+        setRestoringProjectIds(prev => new Set(prev).add(projectId));
+        try {
+            await projectService.restoreProject(projectId);
+            // Remove from results
+            setDeletedResults(prev =>
+                prev
+                    ? {
+                        ...prev,
+                        projects: prev.projects.filter(p => p.id !== projectId),
+                        totalProjects: prev.totalProjects - 1,
+                    }
+                    : prev
+            );
+        } catch {
+            setDeletedError('Failed to restore project.');
+        } finally {
+            setRestoringProjectIds(prev => {
+                const next = new Set(prev);
+                next.delete(projectId);
                 return next;
             });
         }
@@ -204,6 +283,103 @@ export default function AdminDashboard() {
                                         </button>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+                    </DashboardSection>
+
+                    {/* Search Deleted */}
+                    <DashboardSection
+                        title="Search Deleted"
+                        subtitle="Find and restore soft-deleted users and projects"
+                    >
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={deletedQuery}
+                                onChange={e => setDeletedQuery(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleSearchDeleted()}
+                                placeholder="Search deleted users or projects…"
+                                className="flex-1 px-4 py-2.5 bg-white/[0.05] border border-white/10 rounded-xl text-sm text-slate-200 placeholder:text-slate-600 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/15 transition-all"
+                            />
+                            <button
+                                onClick={handleSearchDeleted}
+                                disabled={isSearchingDeleted || !deletedQuery.trim()}
+                                className="px-5 py-2.5 bg-gradient-to-br from-[#3b5bdb] to-[#4f7dff] text-white text-sm font-semibold rounded-xl border-0 shadow-[0_4px_20px_rgba(79,125,255,0.25)] hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSearchingDeleted ? 'Searching…' : 'Search'}
+                            </button>
+                        </div>
+
+                        {deletedError && (
+                            <p className="text-xs text-red-400 m-0">{deletedError}</p>
+                        )}
+
+                        {deletedResults && (
+                            <div className="flex flex-col gap-4 mt-2">
+                                {deletedResults.projects.length === 0 && deletedResults.users.length === 0 && (
+                                    <EmptyState text="No deleted items found." />
+                                )}
+
+                                {/* Deleted Projects */}
+                                {deletedResults.projects.length > 0 && (
+                                    <div className="flex flex-col gap-3">
+                                        <h3 className="text-sm font-semibold text-slate-400 m-0">
+                                            Deleted Projects ({deletedResults.totalProjects})
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {deletedResults.projects.map(p => (
+                                                <div key={p.id} className="flex flex-col gap-2">
+                                                    <ProjectCard project={p} />
+                                                    <button
+                                                        onClick={() => handleRestoreProject(p.id)}
+                                                        disabled={restoringProjectIds.has(p.id)}
+                                                        className="px-4 py-2 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {restoringProjectIds.has(p.id) ? 'Restoring…' : 'Restore'}
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Deleted Users */}
+                                {deletedResults.users.length > 0 && (
+                                    <div className="flex flex-col gap-3">
+                                        <h3 className="text-sm font-semibold text-slate-400 m-0">
+                                            Deleted Users ({deletedResults.totalUsers})
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                            {deletedResults.users.map(u => (
+                                                <div key={u.id} className="flex flex-col gap-2">
+                                                    <div
+                                                        onClick={() => navigate(`/users/${u.id}`)}
+                                                        className="flex items-center gap-3 px-4 py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl hover:bg-white/[0.05] transition-colors cursor-pointer"
+                                                    >
+                                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500/30 to-indigo-500/30 border border-white/10 flex items-center justify-center shrink-0">
+                                                            <span className="text-xs font-bold text-blue-300">
+                                                                {u.username.charAt(0).toUpperCase()}
+                                                            </span>
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold text-slate-200 m-0 truncate">
+                                                                {u.username}
+                                                            </p>
+                                                            <p className="text-xs text-slate-500 m-0">{u.role}</p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleRestoreUser(u.id)}
+                                                        disabled={restoringUserIds.has(u.id)}
+                                                        className="px-4 py-2 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {restoringUserIds.has(u.id) ? 'Restoring…' : 'Restore'}
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </DashboardSection>

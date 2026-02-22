@@ -21,8 +21,11 @@ export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<ProfileTab>('projects');
+    const [isHardDeleting, setIsHardDeleting] = useState(false);
+    const [actionError, setActionError] = useState<string | null>(null);
 
     const isOwnProfile = currentUser?.id === Number(userId);
+    const isAdmin = currentUser?.role === 'Admin';
 
     const fetchProfile = useCallback(async () => {
         if (!userId) return;
@@ -41,6 +44,24 @@ export default function ProfilePage() {
     useEffect(() => {
         fetchProfile();
     }, [fetchProfile]);
+
+    const handleHardDeleteUser = async () => {
+        if (!userId) return;
+        const confirmed = window.confirm(
+            `PERMANENTLY delete user "${profile?.user.username}"? This cannot be undone.`
+        );
+        if (!confirmed) return;
+        setIsHardDeleting(true);
+        setActionError(null);
+        try {
+            await userService.hardDeleteUser(Number(userId));
+            navigate(-1);
+        } catch {
+            setActionError('Failed to permanently delete user.');
+        } finally {
+            setIsHardDeleting(false);
+        }
+    };
 
     // ── Loading / Error ───────────────────────────────────────────────────────
 
@@ -102,6 +123,27 @@ export default function ProfilePage() {
                         onLinkRemoved={fetchProfile}
                     />
                 </div>
+
+                {/* Admin actions */}
+                {isAdmin && !isOwnProfile && (
+                    <div className="flex flex-col gap-3 p-5 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+                        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider m-0">
+                            Admin Actions
+                        </h3>
+                        {actionError && (
+                            <p className="text-xs text-red-400 m-0">{actionError}</p>
+                        )}
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={handleHardDeleteUser}
+                                disabled={isHardDeleting}
+                                className="px-4 py-2 text-xs font-semibold text-red-500 bg-red-500/15 border border-red-500/30 rounded-lg hover:bg-red-500/25 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isHardDeleting ? 'Deleting…' : 'Permanently Delete User'}
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <ProfileTabs
