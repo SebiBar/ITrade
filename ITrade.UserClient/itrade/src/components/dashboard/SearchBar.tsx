@@ -5,8 +5,8 @@ import {
     SortDirection,
     ProjectStatusType,
 } from '../../types';
-import type { SearchRequest, SearchResponse } from '../../types';
-import { discoveryService } from '../../api';
+import type { SearchRequest, SearchResponse, Tag } from '../../types';
+import { discoveryService, tagService } from '../../api';
 
 interface SearchBarProps {
     /** Called when search results arrive */
@@ -50,6 +50,12 @@ export default function SearchBar({ onResults, onLoading }: SearchBarProps) {
     const [deadlineFrom, setDeadlineFrom] = useState('');
     const [deadlineTo, setDeadlineTo] = useState('');
 
+    // Tag filter state
+    const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+    const [tagQuery, setTagQuery] = useState('');
+    const [tagResults, setTagResults] = useState<Tag[]>([]);
+    const [isSearchingTags, setIsSearchingTags] = useState(false);
+
     const filtersRef = useRef<HTMLDivElement>(null);
 
     // Close filters on outside click
@@ -63,9 +69,37 @@ export default function SearchBar({ onResults, onLoading }: SearchBarProps) {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
+    const handleTagSearch = async (query: string) => {
+        setTagQuery(query);
+        if (query.trim().length < 2) {
+            setTagResults([]);
+            return;
+        }
+        setIsSearchingTags(true);
+        try {
+            const results = await tagService.searchTags(query.trim());
+            const existingIds = new Set(selectedTags.map(t => t.id));
+            setTagResults(results.filter(t => !existingIds.has(t.id)));
+        } catch {
+            // fail silently
+        } finally {
+            setIsSearchingTags(false);
+        }
+    };
+
+    const handleAddTag = (tag: Tag) => {
+        setSelectedTags(prev => [...prev, tag]);
+        setTagQuery('');
+        setTagResults([]);
+    };
+
+    const handleRemoveTag = (tagId: number) => {
+        setSelectedTags(prev => prev.filter(t => t.id !== tagId));
+    };
+
     const handleSearch = async (e?: FormEvent) => {
         e?.preventDefault();
-        if (!query.trim() && !projectStatus && !deadlineFrom && !deadlineTo) {
+        if (!query.trim() && !projectStatus && !deadlineFrom && !deadlineTo && selectedTags.length === 0) {
             onResults(null);
             return;
         }
@@ -79,6 +113,7 @@ export default function SearchBar({ onResults, onLoading }: SearchBarProps) {
             sortBy: sortBy as SearchRequest['sortBy'],
             sortDirection: sortDirection as SearchRequest['sortDirection'],
             projectStatusId: projectStatus,
+            tagIds: selectedTags.length > 0 ? selectedTags.map(t => t.id) : undefined,
             deadlineFrom: deadlineFrom || undefined,
             deadlineTo: deadlineTo || undefined,
             page: 1,
@@ -104,6 +139,9 @@ export default function SearchBar({ onResults, onLoading }: SearchBarProps) {
         setProjectStatus(undefined);
         setDeadlineFrom('');
         setDeadlineTo('');
+        setSelectedTags([]);
+        setTagQuery('');
+        setTagResults([]);
         onResults(null);
     };
 
@@ -112,6 +150,7 @@ export default function SearchBar({ onResults, onLoading }: SearchBarProps) {
         sortBy !== SearchSortBy.Relevance,
         sortDirection !== SortDirection.Descending,
         projectStatus !== undefined,
+        selectedTags.length > 0,
         !!deadlineFrom,
         !!deadlineTo,
     ].filter(Boolean).length;
@@ -149,8 +188,8 @@ export default function SearchBar({ onResults, onLoading }: SearchBarProps) {
                     type="button"
                     onClick={() => setShowFilters(prev => !prev)}
                     className={`relative p-2.5 rounded-xl border transition-colors cursor-pointer ${showFilters || activeFilterCount > 0
-                            ? 'bg-blue-500/10 border-blue-500/25 text-blue-400'
-                            : 'bg-white/[0.05] border-white/10 text-slate-400 hover:text-slate-300 hover:bg-white/[0.08]'
+                        ? 'bg-blue-500/10 border-blue-500/25 text-blue-400'
+                        : 'bg-white/[0.05] border-white/10 text-slate-400 hover:text-slate-300 hover:bg-white/[0.08]'
                         }`}
                     title="Filters & Sort"
                 >
@@ -250,6 +289,58 @@ export default function SearchBar({ onResults, onLoading }: SearchBarProps) {
                         </div>
                     </div>
 
+                    {/* Tags filter */}
+                    <div className="mt-4 pt-3 border-t border-white/[0.06]">
+                        <label className="text-[0.65rem] font-semibold text-slate-400 uppercase tracking-wider">
+                            Filter by tags
+                        </label>
+                        {selectedTags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                                {selectedTags.map(tag => (
+                                    <span
+                                        key={tag.id}
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-indigo-500/15 text-indigo-300 border border-indigo-500/20"
+                                    >
+                                        {tag.name}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveTag(tag.id)}
+                                            className="text-indigo-400/60 hover:text-red-400 bg-transparent border-none p-0 cursor-pointer transition-colors leading-none text-sm"
+                                        >
+                                            &times;
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                        <div className="relative mt-2">
+                            <input
+                                type="text"
+                                value={tagQuery}
+                                onChange={e => handleTagSearch(e.target.value)}
+                                placeholder="Search tags to add…"
+                                className="w-full max-w-xs px-3 py-1.5 text-xs text-slate-300 placeholder-slate-600 bg-white/[0.03] border border-white/[0.08] rounded-lg outline-none focus:border-blue-500/30 transition-colors"
+                            />
+                            {isSearchingTags && (
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[0.6rem] text-slate-600">Searching…</span>
+                            )}
+                            {tagResults.length > 0 && (
+                                <div className="absolute z-10 mt-1 w-full max-w-xs bg-[#0f1f3d] border border-white/10 rounded-lg shadow-xl overflow-hidden">
+                                    {tagResults.map(tag => (
+                                        <button
+                                            key={tag.id}
+                                            type="button"
+                                            onClick={() => handleAddTag(tag)}
+                                            className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-white/[0.06] hover:text-white bg-transparent border-none cursor-pointer transition-colors"
+                                        >
+                                            {tag.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Filter actions */}
                     <div className="flex items-center justify-end gap-3 mt-4 pt-3 border-t border-white/[0.06]">
                         <button
@@ -299,11 +390,11 @@ function FilterSelect({
             <select
                 value={value}
                 onChange={e => onChange(e.target.value)}
-                className="px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-xs text-slate-300 outline-none focus:border-blue-500/50 transition-colors cursor-pointer appearance-none [color-scheme:dark]"
+                className="px-3 py-2 bg-[#0f1f3d] border border-white/10 rounded-lg text-xs text-slate-300 outline-none focus:border-blue-500/50 transition-colors cursor-pointer appearance-none [color-scheme:dark]"
             >
-                {placeholder && <option value="">{placeholder}</option>}
+                {placeholder && <option value="" className="bg-[#0f1f3d] text-slate-300">{placeholder}</option>}
                 {Object.entries(options).map(([k, v]) => (
-                    <option key={k} value={k}>
+                    <option key={k} value={k} className="bg-[#0f1f3d] text-slate-300">
                         {v}
                     </option>
                 ))}

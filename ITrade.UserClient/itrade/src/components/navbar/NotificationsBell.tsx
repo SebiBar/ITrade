@@ -43,6 +43,15 @@ export default function NotificationsBell() {
         setIsOpen(prev => !prev);
     };
 
+    const handleDelete = async (id: number) => {
+        try {
+            await notificationService.deleteNotification(id);
+            setNotifications(prev => prev.filter(n => n.id !== id));
+        } catch {
+            // Silently ignore
+        }
+    };
+
     const formatDate = (iso: string) =>
         new Date(iso).toLocaleDateString(undefined, {
             month: 'short',
@@ -109,11 +118,21 @@ export default function NotificationsBell() {
                                         {!n.isRead && (
                                             <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
                                         )}
-                                        <div className={n.isRead ? '' : 'pl-0'}>
+                                        <div className={`flex-1 ${n.isRead ? '' : 'pl-0'}`}>
                                             <p className="text-slate-200 text-xs font-semibold">{n.name}</p>
                                             <p className="text-slate-400 text-xs mt-0.5 leading-relaxed">{n.content}</p>
                                             <p className="text-slate-600 text-[0.65rem] mt-1">{formatDate(n.createdAt)}</p>
                                         </div>
+                                        <button
+                                            onClick={() => handleDelete(n.id)}
+                                            className="mt-0.5 p-1 text-slate-600 hover:text-red-400 bg-transparent border-none cursor-pointer transition-colors rounded hover:bg-white/5 flex-shrink-0"
+                                            title="Delete notification"
+                                        >
+                                            <svg className="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                                                <line x1="18" y1="6" x2="6" y2="18" />
+                                                <line x1="6" y1="6" x2="18" y2="18" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
                             ))

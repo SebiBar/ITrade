@@ -6,6 +6,7 @@ interface ProfileDetailsProps {
     tags: UserProfileTagResponse[];
     links: UserProfileLinkResponse[];
     isOwnProfile?: boolean;
+    userRole?: string;
     onTagAdded?: () => void;
     onTagRemoved?: () => void;
     onLinkAdded?: () => void;
@@ -17,6 +18,7 @@ export default function ProfileDetails({
     tags,
     links,
     isOwnProfile,
+    userRole,
     onTagAdded,
     onTagRemoved,
     onLinkAdded,
@@ -105,7 +107,8 @@ export default function ProfileDetails({
 
     // ── Render ────────────────────────────────────────────────────────────────
 
-    const showTags = tags.length > 0 || isOwnProfile;
+    const isClient = userRole === 'Client';
+    const showTags = !isClient && (tags.length > 0 || isOwnProfile);
     const showLinks = links.length > 0 || isOwnProfile;
 
     if (!showTags && !showLinks) return null;

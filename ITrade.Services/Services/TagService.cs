@@ -82,7 +82,7 @@ namespace ITrade.Services.Services
         public async Task RemoveProfileTagAsync(int tagId)
         {
             var profileTag = await context.UserProfileTags
-                .Where(upt => upt.TagId == tagId && upt.UserId == currentUserService.UserId)
+                .Where(upt => upt.Id == tagId && upt.UserId == currentUserService.UserId)
                 .FirstOrDefaultAsync()
                 ?? throw new Exception("Profile tag not found.");
 

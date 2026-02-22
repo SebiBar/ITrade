@@ -9,6 +9,7 @@ import {
     ProfileTabs,
     ProfileProjectCard,
     ProfileReviewCard,
+    WriteReviewForm as WriteReviewModal,
 } from '../components/profile';
 import type { ProfileTab } from '../components/profile';
 
@@ -23,9 +24,12 @@ export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState<ProfileTab>('projects');
     const [isHardDeleting, setIsHardDeleting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [showReviewModal, setShowReviewModal] = useState(false);
 
     const isOwnProfile = currentUser?.id === Number(userId);
     const isAdmin = currentUser?.role === 'Admin';
+    const canReview = !isOwnProfile && !!currentUser && (currentUser.role === 'Specialist' || currentUser.role === 'Client');
+    const showActions = !isOwnProfile && !!currentUser && (canReview || isAdmin);
 
     const fetchProfile = useCallback(async () => {
         if (!userId) return;
@@ -117,6 +121,7 @@ export default function ProfilePage() {
                         tags={profileTags}
                         links={profileLinks}
                         isOwnProfile={isOwnProfile}
+                        userRole={user.role}
                         onTagRemoved={fetchProfile}
                         onTagAdded={fetchProfile}
                         onLinkAdded={fetchProfile}
@@ -124,25 +129,47 @@ export default function ProfilePage() {
                     />
                 </div>
 
-                {/* Admin actions */}
-                {isAdmin && !isOwnProfile && (
+                {/* Actions card (review for specialists/clients, delete for admins) */}
+                {showActions && (
                     <div className="flex flex-col gap-3 p-5 bg-white/[0.03] border border-white/[0.06] rounded-xl">
                         <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider m-0">
-                            Admin Actions
+                            Actions
                         </h3>
+
                         {actionError && (
                             <p className="text-xs text-red-400 m-0">{actionError}</p>
                         )}
+
                         <div className="flex flex-wrap gap-2">
-                            <button
-                                onClick={handleHardDeleteUser}
-                                disabled={isHardDeleting}
-                                className="px-4 py-2 text-xs font-semibold text-red-500 bg-red-500/15 border border-red-500/30 rounded-lg hover:bg-red-500/25 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isHardDeleting ? 'Deleting…' : 'Permanently Delete User'}
-                            </button>
+                            {canReview && (
+                                <button
+                                    onClick={() => setShowReviewModal(true)}
+                                    className="px-4 py-2 text-xs font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-colors cursor-pointer"
+                                >
+                                    Write Review
+                                </button>
+                            )}
+
+                            {isAdmin && (
+                                <button
+                                    onClick={handleHardDeleteUser}
+                                    disabled={isHardDeleting}
+                                    className="px-4 py-2 text-xs font-semibold text-red-500 bg-red-500/15 border border-red-500/30 rounded-lg hover:bg-red-500/25 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isHardDeleting ? 'Deleting…' : 'Permanently Delete User'}
+                                </button>
+                            )}
                         </div>
                     </div>
+                )}
+
+                {/* Write review modal */}
+                {showReviewModal && (
+                    <WriteReviewModal
+                        revieweeId={user.id}
+                        onClose={() => setShowReviewModal(false)}
+                        onReviewSubmitted={fetchProfile}
+                    />
                 )}
 
                 {/* Tabs */}

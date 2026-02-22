@@ -85,6 +85,7 @@ export default function MyProjectsPage() {
                     projects={projects}
                     activeFilter={statusFilter}
                     onFilterChange={setStatusFilter}
+                    isClient={isClient}
                 />
 
                 {/* Content */}
