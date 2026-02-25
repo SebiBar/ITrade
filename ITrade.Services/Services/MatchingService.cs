@@ -95,7 +95,7 @@ namespace ITrade.Services.Services
         /// Calculates a match score (0-100) based on:
         /// - Tag match percentage (base score, up to 60%)
         /// - Experience bonus (up to 20% based on completed projects with matching tags)
-        /// - Review rating bonus/penalty (up to ±20% based on average rating)
+        /// - Review rating bonus/penalty (up to +-20% based on average rating)
         /// </summary>
         private static double CalculateMatchScore(
             HashSet<int> specialistTags,
@@ -168,7 +168,7 @@ namespace ITrade.Services.Services
                 .FirstOrDefaultAsync();
 
             // Find open projects (Hiring status, no worker assigned) that match specialist's tags
-            // Exclude projects the specialist has already applied to (using subquery for efficiency)
+            // Exclude projects the specialist has already applied to
             var matchingProjects = await context.Projects
                 .Where(p => !p.IsDeleted
                     && p.WorkerId == null
@@ -199,7 +199,7 @@ namespace ITrade.Services.Services
                 })
                 .ToListAsync();
 
-            // Calculate match score for each project using the unified algorithm
+            // Calculate match score for each project
             var scoredProjects = matchingProjects
                 .Select(p =>
                 {
@@ -237,7 +237,7 @@ namespace ITrade.Services.Services
                 return new Dictionary<int, ICollection<UserMatchedResponse>>();
             }
 
-            // 1. Single query: get all tags for all requested projects
+            // Get all tags for all requested projects
             var projectTagRows = await context.ProjectTags
                 .Where(pt => projectIds.Contains(pt.ProjectId))
                 .Select(pt => new { pt.ProjectId, pt.TagId })
@@ -267,8 +267,7 @@ namespace ITrade.Services.Services
                 .GroupBy(r => r.ProjectId)
                 .ToDictionary(g => g.Key, g => g.Select(r => r.SpecialistId).ToHashSet());
 
-            // 2. Single query: find all specialists whose profile tags overlap with any of those tags
-            // Note: Use ToList() instead of ToHashSet()/ToDictionary() as EF Core cannot translate those
+            // Find all specialists whose profile tags overlap with any of those tags
             var matchingSpecialistsRaw = await context.Users
                 .Where(u => !u.IsDeleted
                     && u.UserRoleId == (int)UserRoleEnum.Specialist
@@ -301,7 +300,7 @@ namespace ITrade.Services.Services
                 })
                 .ToList();
 
-            // 3. In-memory: score each specialist per project and build the result dictionary
+            // In-memory: score each specialist per project and build the result dictionary
             var result = new Dictionary<int, ICollection<UserMatchedResponse>>();
 
             foreach (var projectId in projectIds)

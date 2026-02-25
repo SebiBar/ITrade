@@ -8,8 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ITrade.Services.Services
 {
     public class SearchingService(
-        Context context,
-        ICurrentUserService currentUserService
+        Context context
         ) : ISearchingService
     {
         public async Task<SearchResponse> SearchAsync(SearchRequest request)
