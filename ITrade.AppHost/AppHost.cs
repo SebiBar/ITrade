@@ -1,12 +1,19 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var postgres = builder.AddPostgres("db")
-    .WithDataVolume();
+var pgUser = builder.AddParameter("pg-user", secret: true);
+var pgPass = builder.AddParameter("pg-pass", secret: true);
 
-if (builder.ExecutionContext.IsRunMode)
-{
-    postgres.WithPgWeb();
-}
+var postgres = builder.AddAzurePostgresFlexibleServer("db")
+    .WithPasswordAuthentication(pgUser, pgPass)
+    .RunAsContainer(localContainer =>
+    {
+        localContainer.WithDataVolume();
+
+        if (builder.ExecutionContext.IsRunMode)
+        {
+            localContainer.WithPgWeb();
+        }
+    });
 
 var db = postgres.AddDatabase("ITradeDB");
 
@@ -18,7 +25,7 @@ var frontend = builder.AddNpmApp("itrade-frontend", "../ITrade.UserClient/itrade
     .WithReference(apiService)
     .WaitFor(apiService)
     .WithEnvironment("VITE_API_URL", apiService.GetEndpoint("https"))
-    .WithHttpEndpoint(env: "PORT")
+    .WithHttpEndpoint(targetPort: 80, name: "http")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
