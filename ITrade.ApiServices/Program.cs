@@ -17,6 +17,8 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
         {
@@ -26,7 +28,11 @@ builder.Services.AddOpenApi();
 builder.AddNpgsqlDbContext<Context>(connectionName: "ITradeDB");
 builder.Services.AddHttpContextAccessor();
 
-Env.Load(Path.Combine(Directory.GetCurrentDirectory(), $".env"));
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPath))
+{
+    Env.Load(envPath);
+}
 
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -117,21 +123,35 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+}
 
+var shouldMigrateDatabase = app.Environment.IsDevelopment()
+    || app.Configuration.GetValue<bool>("Database:MigrateOnStartup");
+
+if (shouldMigrateDatabase)
+{
     using var scope = app.Services.CreateScope();
     var seedService = scope.ServiceProvider.GetRequiredService<IDatabaseSeedService>();
     seedService.MigrateDatabase(scope);
 
-    // Seed dev test data
-    var devSeeder = scope.ServiceProvider.GetRequiredService<IDevDataSeederService>();
-    var context = scope.ServiceProvider.GetRequiredService<Context>();
-    devSeeder.SeedDevDataAsync(context).GetAwaiter().GetResult();
+    if (app.Environment.IsDevelopment())
+    {
+        // Seed development test data only.
+        var devSeeder = scope.ServiceProvider.GetRequiredService<IDevDataSeederService>();
+        var context = scope.ServiceProvider.GetRequiredService<Context>();
+        devSeeder.SeedDevDataAsync(context).GetAwaiter().GetResult();
+    }
 }
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
+app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapDefaultEndpoints();
 app.MapControllers();
 
 app.Run();

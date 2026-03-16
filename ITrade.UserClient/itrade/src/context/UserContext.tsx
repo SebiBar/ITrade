@@ -11,8 +11,6 @@ import { TokenManager } from '../api/apiClient';
 import type { UserResponse } from '../types/responses';
 import type { LoginRequest, RegisterRequest } from '../types/requests';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface UserContextValue {
     /** Basic info (id, username, role) of the currently authenticated user, or null if not logged in */
     currentUser: UserResponse | null;
@@ -27,11 +25,7 @@ interface UserContextValue {
     clearAuthError: () => void;
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
-
 const UserContext = createContext<UserContextValue | undefined>(undefined);
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function UserProvider({ children }: { children: ReactNode }) {
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
@@ -117,8 +111,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
         </UserContext.Provider>
     );
 }
-
-// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useUser(): UserContextValue {
     const ctx = useContext(UserContext);
