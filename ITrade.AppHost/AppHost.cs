@@ -1,12 +1,20 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var postgres = builder.AddPostgres("db")
-    .WithDataVolume();
+var pgUser = builder.AddParameter("pg-user", secret: true);
+var pgPass = builder.AddParameter("pg-pass", secret: true);
 
-if (builder.ExecutionContext.IsRunMode)
-{
-    postgres.WithPgWeb();
-}
+var postgres = builder.AddAzurePostgresFlexibleServer("db")
+    .WithPasswordAuthentication(pgUser, pgPass)
+    .RunAsContainer(localContainer =>
+    {
+        // Everything inside this block ONLY applies to your local Docker machine!
+        localContainer.WithDataVolume();
+
+        if (builder.ExecutionContext.IsRunMode)
+        {
+            localContainer.WithPgWeb();
+        }
+    });
 
 var db = postgres.AddDatabase("ITradeDB");
 
