@@ -61,7 +61,16 @@ builder.Services.AddAuthentication(options =>
 .AddJwtBearer(options =>
 {
     var jwtSection = builder.Configuration.GetSection("Jwt");
-    var jwt = jwtSection.Get<JwtSettings>()!;
+    var jwt = jwtSection.Get<JwtSettings>();
+
+    if (jwt is null
+        || string.IsNullOrWhiteSpace(jwt.Secret)
+        || string.IsNullOrWhiteSpace(jwt.Issuer)
+        || string.IsNullOrWhiteSpace(jwt.Audience))
+    {
+        throw new InvalidOperationException("JWT configuration is missing or invalid. Ensure Jwt:Secret, Jwt:Issuer and Jwt:Audience are configured in production.");
+    }
+
     options.RequireHttpsMetadata = true;
     options.SaveToken = false;
     options.TokenValidationParameters = new TokenValidationParameters
