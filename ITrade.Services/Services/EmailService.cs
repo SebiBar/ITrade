@@ -1,5 +1,6 @@
 ﻿using ITrade.Common.Helpers;
 using ITrade.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Json;
@@ -8,7 +9,8 @@ namespace ITrade.Services.Services
 {
     public class EmailService(
         IHttpClientFactory httpClientFactory,
-        IOptions<MailJetSettings> mailJetSettings
+        IOptions<MailJetSettings> mailJetSettings,
+        ILogger<EmailService> logger
     ) : IEmailService
     {
         private readonly HttpClient _client = httpClientFactory.CreateClient("Mailjet");
@@ -37,14 +39,54 @@ namespace ITrade.Services.Services
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _client.PostAsync(mailJetSettings.Value.Endpoint, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
             if (!response.IsSuccessStatusCode)
             {
-                var responseBody = await response.Content.ReadAsStringAsync();
+                logger.LogError(
+                    "Mailjet send failed with HTTP status {StatusCode}. Response: {ResponseBody}",
+                    (int)response.StatusCode,
+                    responseBody);
 
                 throw new InvalidOperationException(
                     $"Failed to send email. Status: {(int)response.StatusCode} {response.StatusCode}. " +
                     $"Body: {responseBody}"
                 );
+            }
+
+            ValidateMailjetMessageStatus(responseBody);
+        }
+
+        private static void ValidateMailjetMessageStatus(string responseBody)
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(responseBody);
+                if (!document.RootElement.TryGetProperty("Messages", out var messages)
+                    || messages.ValueKind != JsonValueKind.Array
+                    || messages.GetArrayLength() == 0)
+                {
+                    throw new InvalidOperationException("Mailjet returned an unexpected response format.");
+                }
+
+                foreach (var message in messages.EnumerateArray())
+                {
+                    if (!message.TryGetProperty("Status", out var statusElement))
+                    {
+                        throw new InvalidOperationException($"Mailjet response missing message status. Body: {responseBody}");
+                    }
+
+                    var status = statusElement.GetString();
+                    if (!string.Equals(status, "success", StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException(
+                            $"Mailjet rejected email with status '{status}'. Body: {responseBody}");
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                throw new InvalidOperationException($"Mailjet returned non-JSON response. Body: {responseBody}");
             }
         }
 
