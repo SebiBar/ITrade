@@ -24,7 +24,7 @@ var apiService = builder.AddProject<Projects.ITrade_ApiServices>("itrade-apiserv
 var frontend = builder.AddNpmApp("itrade-frontend", "../ITrade.UserClient/itrade", "dev")
     .WithReference(apiService)
     .WaitFor(apiService)
-    .WithEnvironment("VITE_API_URL", apiService.GetEndpoint("https"))
+    .WithEnvironment("BACKEND_URL", apiService.GetEndpoint("https"))
     .WithHttpEndpoint(targetPort: 80, name: "http")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();

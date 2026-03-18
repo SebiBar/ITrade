@@ -21,8 +21,11 @@ FROM nginx:alpine
 # Copy built files from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx configuration as a template for envsubst
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+
+# Ensure that only BACKEND_URL is substituted in the template
+ENV NGINX_ENVSUBST_FILTER=BACKEND_URL
 
 # Expose port 80
 EXPOSE 80

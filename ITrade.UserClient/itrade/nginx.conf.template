@@ -1,36 +1,33 @@
 server {
-    # Nginx listens on port 80 inside the Docker container
     listen 80;
     server_name localhost;
     root /usr/share/nginx/html;
     index index.html;
 
-    # 1. Standard frontend routing (React/Vue/etc.)
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # 2. THE NEW PART: Proxy API requests to the .NET backend
     location /api/ {
-        # Remember to update this URL/port to match your production backend
-        # proxy_pass http://itrade-apiservices:8080; 
+        proxy_pass ${BACKEND_URL};
         
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
-        # proxy_set_header Host $host;
+        proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
+
+        proxy_ssl_server_name on;
     }
 
-    # 3. Gzip compression (Kept from your config!)
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
     gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
 
-    # 4. Cache static assets (Kept from your config!)
     location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
