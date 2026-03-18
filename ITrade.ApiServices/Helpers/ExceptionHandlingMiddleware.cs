@@ -7,10 +7,14 @@ namespace ITrade.ApiServices.Helpers
     public class ExceptionHandlingMiddleware : IExceptionHandler
     {
         private readonly ProblemDetailsFactory _problemDetailsFactory;
+        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-        public ExceptionHandlingMiddleware(ProblemDetailsFactory problemDetailsFactory)
+        public ExceptionHandlingMiddleware(
+            ProblemDetailsFactory problemDetailsFactory,
+            ILogger<ExceptionHandlingMiddleware> logger)
         {
             _problemDetailsFactory = problemDetailsFactory;
+            _logger = logger;
         }
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
@@ -27,6 +31,15 @@ namespace ITrade.ApiServices.Helpers
                 detail: exception.Message,
                 instance: httpContext.Request.Path
             );
+
+            _logger.Log(
+                statusCode >= StatusCodes.Status500InternalServerError ? LogLevel.Error : LogLevel.Warning,
+                exception,
+                "Request failed. Method: {Method}; Path: {Path}; StatusCode: {StatusCode}; TraceId: {TraceId}",
+                httpContext.Request.Method,
+                httpContext.Request.Path,
+                statusCode,
+                httpContext.TraceIdentifier);
 
             httpContext.Response.Clear();
             httpContext.Response.StatusCode = statusCode;

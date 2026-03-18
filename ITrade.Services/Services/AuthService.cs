@@ -24,7 +24,7 @@ namespace ITrade.Services.Services
     {
         public async Task RegisterAsync(RegisterRequest registerRequest)
         {
-            ValidateRegisterRequest(registerRequest);
+            await ValidateRegisterRequest(registerRequest);
 
             var user = new User
             {
@@ -186,7 +186,7 @@ namespace ITrade.Services.Services
                 throw new ArgumentException("Password is required.", nameof(req.Password));
         }
 
-        private async void ValidateRegisterRequest(RegisterRequest req)
+        private async Task ValidateRegisterRequest(RegisterRequest req)
         {
             if (req == null)
                 throw new ArgumentException("Request cannot be null.", nameof(req));
@@ -209,7 +209,7 @@ namespace ITrade.Services.Services
             if (!System.Net.Mail.MailAddress.TryCreate(req.Email, out _))
                 throw new ArgumentException("Email format is invalid.", nameof(req.Email));
 
-            if (await context.Users.FirstOrDefaultAsync(u => u.Email == req.Email) != null)
+            if (await context.Users.AnyAsync(u => u.Email == req.Email))
                 throw new InvalidOperationException("User with this email already exists.");
         }
 
