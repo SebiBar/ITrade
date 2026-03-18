@@ -47,7 +47,20 @@ namespace ITrade.Services.Services
         {
             var rel = absolutePath.TrimStart('/', '\\')
                                    .Replace('/', Path.DirectorySeparatorChar);
-            return Path.Combine(env.ContentRootPath, rel);
+
+            var contentRootCandidate = Path.Combine(env.ContentRootPath, rel);
+            if (File.Exists(contentRootCandidate))
+                return contentRootCandidate;
+
+            var baseDirectoryCandidate = Path.Combine(AppContext.BaseDirectory, rel);
+            if (File.Exists(baseDirectoryCandidate))
+                return baseDirectoryCandidate;
+
+            var currentDirectoryCandidate = Path.Combine(Directory.GetCurrentDirectory(), rel);
+            if (File.Exists(currentDirectoryCandidate))
+                return currentDirectoryCandidate;
+
+            return contentRootCandidate;
         }
     }
 }
