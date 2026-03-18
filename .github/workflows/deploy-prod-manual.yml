@@ -24,14 +24,12 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    environment: ${{ inputs.github_environment }}
     env:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZD_ENV_NAME: ${{ inputs.environment_name }}
       AZD_LOCATION: ${{ inputs.azure_location }}
-      PRODUCTION_API_BASE_URL: ${{ vars.PRODUCTION_API_BASE_URL }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       MAILJET_KEY: ${{ secrets.MAILJET_KEY }}
       MAILJET_SECRET: ${{ secrets.MAILJET_SECRET }}
@@ -49,7 +47,6 @@ jobs:
           test -n "$AZURE_SUBSCRIPTION_ID" || (echo "Missing AZURE_SUBSCRIPTION_ID" && exit 1)
           test -n "$AZURE_TENANT_ID" || (echo "Missing AZURE_TENANT_ID" && exit 1)
           test -n "$AZURE_CLIENT_ID" || (echo "Missing AZURE_CLIENT_ID" && exit 1)
-          test -n "$PRODUCTION_API_BASE_URL" || (echo "Missing PRODUCTION_API_BASE_URL" && exit 1)
           test -n "$JWT_SECRET" || (echo "Missing JWT_SECRET" && exit 1)
           test -n "$MAILJET_KEY" || (echo "Missing MAILJET_KEY" && exit 1)
           test -n "$MAILJET_SECRET" || (echo "Missing MAILJET_SECRET" && exit 1)
@@ -73,7 +70,6 @@ jobs:
       - name: Configure azd environment values
         run: |
           azd env set --environment "$AZD_ENV_NAME" Database__MigrateOnStartup true
-          azd env set --environment "$AZD_ENV_NAME" Urls__ApiBase "$PRODUCTION_API_BASE_URL"
           azd env set --environment "$AZD_ENV_NAME" Jwt__Secret "$JWT_SECRET"
           azd env set --environment "$AZD_ENV_NAME" MailJet__Key "$MAILJET_KEY"
           azd env set --environment "$AZD_ENV_NAME" MailJet__Secret "$MAILJET_SECRET"
