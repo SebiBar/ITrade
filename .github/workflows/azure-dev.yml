@@ -17,6 +17,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: ${{ vars.AZURE_ENV_NAME }}
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
@@ -25,6 +26,10 @@ jobs:
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
       AZURE_PG_USER: ${{ secrets.PG_USER }}
       AZURE_PG_PASS: ${{ secrets.PG_PASS }}
+      PRODUCTION_API_BASE_URL: ${{ vars.PRODUCTION_API_BASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      MAILJET_KEY: ${{ secrets.MAILJET_KEY }}
+      MAILJET_SECRET: ${{ secrets.MAILJET_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,14 +51,34 @@ jobs:
             --tenant-id "$Env:AZURE_TENANT_ID"
         shell: pwsh
 
+      - name: Validate required config
+        run: |
+          test -n "$AZURE_ENV_NAME" || (echo "Missing AZURE_ENV_NAME" && exit 1)
+          test -n "$AZURE_LOCATION" || (echo "Missing AZURE_LOCATION" && exit 1)
+          test -n "$PRODUCTION_API_BASE_URL" || (echo "Missing PRODUCTION_API_BASE_URL" && exit 1)
+          test -n "$JWT_SECRET" || (echo "Missing JWT_SECRET" && exit 1)
+          test -n "$MAILJET_KEY" || (echo "Missing MAILJET_KEY" && exit 1)
+          test -n "$MAILJET_SECRET" || (echo "Missing MAILJET_SECRET" && exit 1)
+
+      - name: Ensure azd environment exists
+        run: azd env select "$AZURE_ENV_NAME" --no-prompt || azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" --location "$AZURE_LOCATION" --no-prompt
+
+      - name: Configure azd environment values
+        run: |
+          azd env set --environment "$AZURE_ENV_NAME" Database__MigrateOnStartup true
+          azd env set --environment "$AZURE_ENV_NAME" Urls__ApiBase "$PRODUCTION_API_BASE_URL"
+          azd env set --environment "$AZURE_ENV_NAME" Jwt__Secret "$JWT_SECRET"
+          azd env set --environment "$AZURE_ENV_NAME" MailJet__Key "$MAILJET_KEY"
+          azd env set --environment "$AZURE_ENV_NAME" MailJet__Secret "$MAILJET_SECRET"
+
 
       - name: Provision Infrastructure
-        run: azd provision --no-prompt
+        run: azd provision --environment "$AZURE_ENV_NAME" --no-prompt
         env:
           AZURE_DB_PASSWORD: ${{ secrets.AZURE_DB_PASSWORD }}
 
       - name: Deploy Application
-        run: azd deploy --no-prompt
+        run: azd deploy --environment "$AZURE_ENV_NAME" --no-prompt
         env:
           AZURE_DB_PASSWORD: ${{ secrets.AZURE_DB_PASSWORD }}
         

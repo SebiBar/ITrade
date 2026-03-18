@@ -25,4 +25,11 @@
     <ProjectReference Include="..\ITrade.Services\ITrade.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Views\Email\*.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

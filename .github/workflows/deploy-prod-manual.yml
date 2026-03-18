@@ -3,14 +3,18 @@ name: Deploy Production (manual)
 on:
   workflow_dispatch:
     inputs:
+      github_environment:
+        description: "GitHub environment name"
+        required: true
+        default: "production"
       environment_name:
         description: "azd environment name"
         required: true
-        default: "prod"
+        default: "itrade-pl"
       azure_location:
         description: "Azure location"
         required: true
-        default: "westeurope"
+        default: "polandcentral"
 
 permissions:
   id-token: write
@@ -20,14 +24,14 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ inputs.github_environment }}
     env:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZD_ENV_NAME: ${{ inputs.environment_name }}
       AZD_LOCATION: ${{ inputs.azure_location }}
-      PRODUCTION_API_BASE_URL: ${{ secrets.PRODUCTION_API_BASE_URL }}
+      PRODUCTION_API_BASE_URL: ${{ vars.PRODUCTION_API_BASE_URL }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       MAILJET_KEY: ${{ secrets.MAILJET_KEY }}
       MAILJET_SECRET: ${{ secrets.MAILJET_SECRET }}
@@ -68,11 +72,11 @@ jobs:
 
       - name: Configure azd environment values
         run: |
-          azd env set Database__MigrateOnStartup true
-          azd env set Urls__ApiBase "$PRODUCTION_API_BASE_URL"
-          azd env set Jwt__Secret "$JWT_SECRET"
-          azd env set MailJet__Key "$MAILJET_KEY"
-          azd env set MailJet__Secret "$MAILJET_SECRET"
+          azd env set --environment "$AZD_ENV_NAME" Database__MigrateOnStartup true
+          azd env set --environment "$AZD_ENV_NAME" Urls__ApiBase "$PRODUCTION_API_BASE_URL"
+          azd env set --environment "$AZD_ENV_NAME" Jwt__Secret "$JWT_SECRET"
+          azd env set --environment "$AZD_ENV_NAME" MailJet__Key "$MAILJET_KEY"
+          azd env set --environment "$AZD_ENV_NAME" MailJet__Secret "$MAILJET_SECRET"
 
       - name: Provision and deploy
         run: azd up --environment "$AZD_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" --location "$AZD_LOCATION" --no-prompt
