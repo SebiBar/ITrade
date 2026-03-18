@@ -32,6 +32,82 @@ const apiClient: AxiosInstance = axios.create({
     },
 });
 
+const toNonEmptyString = (value: unknown): string | null => {
+    if (typeof value !== 'string') {
+        return null;
+    }
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+};
+
+const extractServerMessage = (data: unknown): string | null => {
+    const asPlainString = toNonEmptyString(data);
+    if (asPlainString) {
+        return asPlainString;
+    }
+
+    if (!data || typeof data !== 'object') {
+        return null;
+    }
+
+    const payload = data as Record<string, unknown>;
+    const detail = toNonEmptyString(payload.detail);
+    if (detail) {
+        return detail;
+    }
+
+    const message = toNonEmptyString(payload.message);
+    if (message) {
+        return message;
+    }
+
+    const title = toNonEmptyString(payload.title);
+    if (title) {
+        return title;
+    }
+
+    const errors = payload.errors;
+    if (errors && typeof errors === 'object') {
+        for (const value of Object.values(errors as Record<string, unknown>)) {
+            if (Array.isArray(value)) {
+                for (const item of value) {
+                    const errorMessage = toNonEmptyString(item);
+                    if (errorMessage) {
+                        return errorMessage;
+                    }
+                }
+            }
+
+            const errorMessage = toNonEmptyString(value);
+            if (errorMessage) {
+                return errorMessage;
+            }
+        }
+    }
+
+    return null;
+};
+
+const toDisplayError = (error: AxiosError): Error => {
+    const statusCode = error.response?.status;
+    const serverMessage = extractServerMessage(error.response?.data);
+
+    if (statusCode !== undefined && serverMessage) {
+        return new Error(`HTTP ${statusCode}: ${serverMessage}`);
+    }
+
+    if (statusCode !== undefined) {
+        return new Error(`HTTP ${statusCode}: ${error.message}`);
+    }
+
+    if (serverMessage) {
+        return new Error(serverMessage);
+    }
+
+    return new Error(error.message || 'Request failed.');
+};
+
 // Request interceptor to add JWT token
 apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
@@ -95,7 +171,7 @@ apiClient.interceptors.response.use(
                 // No refresh token available, redirect to login
                 TokenManager.clearTokens();
                 window.location.href = '/login';
-                return Promise.reject(error);
+                return Promise.reject(toDisplayError(error));
             }
 
             try {
@@ -121,15 +197,21 @@ apiClient.interceptors.response.use(
 
                 return apiClient(originalRequest);
             } catch (refreshError) {
-                processQueue(refreshError as Error);
+                const queueError = axios.isAxiosError(refreshError)
+                    ? toDisplayError(refreshError)
+                    : refreshError instanceof Error
+                        ? refreshError
+                        : new Error('Failed to refresh token.');
+
+                processQueue(queueError);
                 isRefreshing = false;
                 TokenManager.clearTokens();
                 window.location.href = '/login';
-                return Promise.reject(refreshError);
+                return Promise.reject(queueError);
             }
         }
 
-        return Promise.reject(error);
+        return Promise.reject(toDisplayError(error));
     }
 );
 

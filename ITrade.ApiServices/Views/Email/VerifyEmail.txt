@@ -4,7 +4,5 @@ Hi {{FullName}},
 
 Please confirm your email address to finish setting up your ITrade account.
 
-Confirm here:
+Validate here:
 {{VerifyLink}}
-
-If the link above doesn’t open, copy and paste it into your browser.

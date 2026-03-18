@@ -4,6 +4,7 @@ import { UserProvider, useUser } from './context';
 import { Navbar } from './components/navbar';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 import ProfilePage from './pages/ProfilePage';
@@ -66,6 +67,7 @@ function AppRoutes() {
           </GuestRoute>
         }
       />
+      <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
       <Route
         path="/dashboard"
         element={

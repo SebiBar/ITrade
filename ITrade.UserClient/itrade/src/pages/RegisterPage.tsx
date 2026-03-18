@@ -1,47 +1,30 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context';
 import { UserRole } from '../types/enums';
 import { AuthPageLayout, AuthCard, RoleToggle } from '../components/auth';
 import { Button, FormField, AlertBanner } from '../components/ui';
 
 export default function RegisterPage() {
+    const navigate = useNavigate();
     const { register, isLoading, authError, clearAuthError } = useUser();
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState<UserRole>(UserRole.Client);
-    const [success, setSuccess] = useState(false);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         clearAuthError();
         try {
             await register({ username, email, password, role });
-            setSuccess(true);
+            window.alert('Check your email to validate');
+            navigate('/login');
         } catch {
             // authError is set inside useUser
         }
     };
-
-    if (success) {
-        return (
-            <AuthPageLayout>
-                <AuthCard
-                    title="Check your inbox"
-                    subtitle={`We've sent a verification link to ${email}. Click the link to activate your account.`}
-                    footer={
-                        <Link to="/login" onClick={clearAuthError} className="text-blue-400 font-medium hover:text-blue-300 transition-colors no-underline">
-                            Back to sign in
-                        </Link>
-                    }
-                >
-                    <AlertBanner variant="success">Account created successfully!</AlertBanner>
-                </AuthCard>
-            </AuthPageLayout>
-        );
-    }
 
     const footer = (
         <>

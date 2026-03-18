@@ -5,6 +5,7 @@ using ITrade.DB.Enums;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Requests;
 using ITrade.Services.Responses;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,7 @@ namespace ITrade.Services.Services
         IEmailService emailService,
         ITemplateService templateService,
         ICurrentUserService currentUserService,
+        IHttpContextAccessor httpContextAccessor,
         IOptions<TemplateSettings> templateSettings,
         IOptions<UrlSettings> urlSettings
     ) : IAuthService
@@ -65,8 +67,12 @@ namespace ITrade.Services.Services
             }
 
             var user = token.User;
-            user.IsEmailConfirmed = true;
-            user.UpdatedAt = DateTime.UtcNow;
+            
+            if (!user.IsEmailConfirmed)
+            {
+                user.IsEmailConfirmed = true;
+                user.UpdatedAt = DateTime.UtcNow;
+            }
 
             context.Tokens.Remove(token);
             await context.SaveChangesAsync();
@@ -215,8 +221,7 @@ namespace ITrade.Services.Services
 
         private async Task SendVerificationEmailAsync(string toEmail, string username, string tokenValue)
         {
-            var apiBase = urlSettings.Value.ApiBase.TrimEnd('/');
-            var verifyLink = $"{apiBase}/auth/verify-email?token={tokenValue}";
+            var verifyLink = BuildFrontendVerifyEmailLink(tokenValue);
 
             var model = new Dictionary<string, string>
             {
@@ -233,6 +238,84 @@ namespace ITrade.Services.Services
                 textBody: text,
                 htmlBody: html
             );
+        }
+
+        private string BuildFrontendVerifyEmailLink(string tokenValue)
+        {
+            var normalizedBase = ResolveFrontendBaseUrl();
+            var verifyPath = NormalizePath(urlSettings.Value.VerifyEmailPath, "/auth/verify-email");
+            var encodedToken = Uri.EscapeDataString(tokenValue);
+
+            return $"{normalizedBase}{verifyPath}?token={encodedToken}";
+        }
+
+        private string ResolveFrontendBaseUrl()
+        {
+            var configuredFrontendBase = NormalizeConfiguredBaseUrl(urlSettings.Value.FrontendBase);
+            if (configuredFrontendBase != null)
+            {
+                return configuredFrontendBase;
+            }
+
+            var request = httpContextAccessor.HttpContext?.Request;
+            if (request != null)
+            {
+                if (TryGetUrlOrigin(request.Headers["Origin"].ToString(), out var originBase))
+                {
+                    return originBase;
+                }
+
+                if (TryGetUrlOrigin(request.Headers["Referer"].ToString(), out var refererBase))
+                {
+                    return refererBase;
+                }
+            }
+
+            return urlSettings.Value.ApiBase.TrimEnd('/');
+        }
+
+        private static string? NormalizeConfiguredBaseUrl(string? rawBaseUrl)
+        {
+            if (string.IsNullOrWhiteSpace(rawBaseUrl))
+            {
+                return null;
+            }
+
+            var trimmed = rawBaseUrl.Trim();
+            if (trimmed == "/")
+            {
+                return null;
+            }
+
+            return trimmed.TrimEnd('/');
+        }
+
+        private static bool TryGetUrlOrigin(string candidate, out string origin)
+        {
+            origin = string.Empty;
+            if (!Uri.TryCreate(candidate, UriKind.Absolute, out var uri))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(uri.Scheme) || string.IsNullOrWhiteSpace(uri.Authority))
+            {
+                return false;
+            }
+
+            origin = $"{uri.Scheme}://{uri.Authority}".TrimEnd('/');
+            return true;
+        }
+
+        private static string NormalizePath(string rawPath, string fallbackPath)
+        {
+            if (string.IsNullOrWhiteSpace(rawPath))
+            {
+                return fallbackPath;
+            }
+
+            var trimmedPath = rawPath.Trim();
+            return trimmedPath.StartsWith('/') ? trimmedPath : $"/{trimmedPath}";
         }
 
         private async Task SendForgotPasswordEmailAsync(string toEmail, string username, string tokenValue)
