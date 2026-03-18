@@ -31,8 +31,11 @@ jobs:
       AZD_ENV_NAME: ${{ inputs.environment_name }}
       AZD_LOCATION: ${{ inputs.azure_location }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      Jwt__Secret: ${{ secrets.JWT_SECRET }}
       MAILJET_KEY: ${{ secrets.MAILJET_KEY }}
+      MailJet__Key: ${{ secrets.MAILJET_KEY }}
       MAILJET_SECRET: ${{ secrets.MAILJET_SECRET }}
+      MailJet__Secret: ${{ secrets.MAILJET_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

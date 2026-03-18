@@ -17,11 +17,46 @@ var postgres = builder.AddAzurePostgresFlexibleServer("db")
 
 var db = postgres.AddDatabase("ITradeDB");
 
-var databaseMigrateOnStartup = builder.Configuration["Database:MigrateOnStartup"];
-var urlsApiBase = builder.Configuration["Urls:ApiBase"];
-var jwtSecret = builder.Configuration["Jwt:Secret"];
-var mailJetKey = builder.Configuration["MailJet:Key"];
-var mailJetSecret = builder.Configuration["MailJet:Secret"];
+static string? FirstNonEmpty(params string?[] values)
+{
+    foreach (var value in values)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return value;
+        }
+    }
+
+    return null;
+}
+
+var databaseMigrateOnStartup = FirstNonEmpty(
+    builder.Configuration["Database:MigrateOnStartup"],
+    Environment.GetEnvironmentVariable("Database__MigrateOnStartup"),
+    Environment.GetEnvironmentVariable("DATABASE__MIGRATEONSTARTUP"));
+
+var urlsApiBase = FirstNonEmpty(
+    builder.Configuration["Urls:ApiBase"],
+    Environment.GetEnvironmentVariable("Urls__ApiBase"),
+    Environment.GetEnvironmentVariable("URLS__APIBASE"));
+
+var jwtSecret = FirstNonEmpty(
+    builder.Configuration["Jwt:Secret"],
+    Environment.GetEnvironmentVariable("Jwt__Secret"),
+    Environment.GetEnvironmentVariable("JWT__SECRET"),
+    Environment.GetEnvironmentVariable("JWT_SECRET"));
+
+var mailJetKey = FirstNonEmpty(
+    builder.Configuration["MailJet:Key"],
+    Environment.GetEnvironmentVariable("MailJet__Key"),
+    Environment.GetEnvironmentVariable("MAILJET__KEY"),
+    Environment.GetEnvironmentVariable("MAILJET_KEY"));
+
+var mailJetSecret = FirstNonEmpty(
+    builder.Configuration["MailJet:Secret"],
+    Environment.GetEnvironmentVariable("MailJet__Secret"),
+    Environment.GetEnvironmentVariable("MAILJET__SECRET"),
+    Environment.GetEnvironmentVariable("MAILJET_SECRET"));
 
 var apiService = builder.AddProject<Projects.ITrade_ApiServices>("itrade-apiservices")
     .WithReference(db)
