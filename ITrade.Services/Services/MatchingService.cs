@@ -168,13 +168,12 @@ namespace ITrade.Services.Services
                 .FirstOrDefaultAsync();
 
             // Find open projects (Hiring status, no worker assigned) that match specialist's tags
-            // Exclude projects the specialist has already applied to
+            // Exclude projects the specialist has already applied to or been invited to
             var matchingProjects = await context.Projects
                 .Where(p => !p.IsDeleted
                     && p.WorkerId == null
                     && p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.Hiring
-                    && !p.Requests.Any(r => r.SenderId == userId
-                        && r.RequestTypeId == (int)ProjectRequestTypeEnum.Application)
+                    && !p.Requests.Any(r => r.SenderId == userId || r.ReceiverId == userId)
                     && p.ProjectTags.Any(pt => specialistTagIds.Contains(pt.TagId)))
                 .Select(p => new
                 {
@@ -256,14 +255,16 @@ namespace ITrade.Services.Services
                 return projectIds.ToDictionary(id => id, _ => (ICollection<UserMatchedResponse>)[]);
             }
 
-            // Get specialists already invited to each project
-            var invitedSpecialistsByProject = await context.Requests
-                .Where(r => projectIds.Contains(r.ProjectId)
-                    && r.RequestTypeId == (int)ProjectRequestTypeEnum.Invitation)
-                .Select(r => new { r.ProjectId, SpecialistId = r.ReceiverId })
+            var involvedSpecialistsByProject = await context.Requests
+                .Where(r => projectIds.Contains(r.ProjectId))
+                .Select(r => new 
+                { 
+                    r.ProjectId, 
+                    SpecialistId = r.RequestTypeId == (int)ProjectRequestTypeEnum.Invitation ? r.ReceiverId : r.SenderId 
+                })
                 .ToListAsync();
 
-            var invitedSpecialistsLookup = invitedSpecialistsByProject
+            var involvedSpecialistsLookup = involvedSpecialistsByProject
                 .GroupBy(r => r.ProjectId)
                 .ToDictionary(g => g.Key, g => g.Select(r => r.SpecialistId).ToHashSet());
 
@@ -311,11 +312,11 @@ namespace ITrade.Services.Services
                     continue;
                 }
 
-                // Get specialists already invited to this project
-                var invitedSpecialists = invitedSpecialistsLookup.GetValueOrDefault(projectId) ?? [];
+                // Get specialists already involved with this project (invited or applied)
+                var involvedSpecialists = involvedSpecialistsLookup.GetValueOrDefault(projectId) ?? [];
 
                 var scored = matchingSpecialists
-                    .Where(s => !invitedSpecialists.Contains(s.User.Id))
+                    .Where(s => !involvedSpecialists.Contains(s.User.Id))
                     .Select(s =>
                     {
                         var score = CalculateMatchScore(

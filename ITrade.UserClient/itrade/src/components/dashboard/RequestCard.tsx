@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { requestService } from '../../api';
 import type { RequestResponse } from '../../types';
 
@@ -12,6 +13,7 @@ interface RequestCardProps {
 
 /** Card displaying a pending invitation or application with accept/reject actions */
 export default function RequestCard({ request, variant, onResolved }: RequestCardProps) {
+    const navigate = useNavigate();
     const [isResolving, setIsResolving] = useState(false);
 
     const handleResolve = async (accepted: boolean) => {
@@ -33,16 +35,27 @@ export default function RequestCard({ request, variant, onResolved }: RequestCar
             year: 'numeric',
         });
 
-    const label = variant === 'invitation'
-        ? `${request.senderUsername} invited you to`
-        : `${request.senderUsername} applied to`;
+    const actionText = variant === 'invitation'
+        ? ' invited you to '
+        : ' applied to ';
 
     return (
         <div className="flex items-center justify-between gap-4 px-5 py-4 bg-white/[0.03] border border-white/[0.06] rounded-xl hover:bg-white/[0.05] transition-colors">
             <div className="flex flex-col gap-1 min-w-0">
                 <p className="text-sm text-slate-300 m-0 truncate">
-                    <span className="text-slate-500">{label}</span>{' '}
-                    <span className="font-semibold text-slate-200">{request.projectName}</span>
+                    <button
+                        onClick={() => navigate(`/users/${request.senderId}`)}
+                        className="text-slate-500 hover:text-blue-400 bg-transparent border-none p-0 cursor-pointer transition-colors text-left"
+                    >
+                        {request.senderUsername}
+                    </button>
+                    <span className="text-slate-500">{actionText}</span>
+                    <button
+                        onClick={() => navigate(`/projects/${request.projectId}`)}
+                        className="font-semibold text-slate-200 hover:text-blue-400 bg-transparent border-none p-0 cursor-pointer transition-colors text-left"
+                    >
+                        {request.projectName}
+                    </button>
                 </p>
                 {request.message && (
                     <p className="text-xs text-slate-500 m-0 truncate">"{request.message}"</p>

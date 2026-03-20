@@ -28,16 +28,19 @@ export default function ReceivedRequestCard({ request, onResolved }: ReceivedReq
     const isResolved = request.accepted !== undefined && request.accepted !== null;
     const wasAccepted = request.accepted === true;
 
-    const label =
-        request.requestType === 'Invitation'
-            ? `${request.senderUsername} invited you to`
-            : `${request.senderUsername} applied to`;
-
     return (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 px-4 sm:px-5 py-4 bg-white/[0.03] border border-white/[0.06] rounded-xl hover:bg-white/[0.05] transition-colors">
             <div className="flex flex-col gap-1 min-w-0">
                 <p className="text-sm text-slate-300 m-0 sm:truncate">
-                    <span className="text-slate-500">{label}</span>{' '}
+                    <button
+                        onClick={() => navigate(`/users/${request.senderId}`)}
+                        className="text-slate-500 hover:text-blue-400 bg-transparent border-none p-0 cursor-pointer transition-colors text-left"
+                    >
+                        {request.senderUsername}
+                    </button>
+                    <span className="text-slate-500">
+                        {request.requestType === 'Invitation' ? ' invited you to ' : ' applied to '}
+                    </span>
                     <button
                         onClick={() => navigate(`/projects/${request.projectId}`)}
                         className="font-semibold text-slate-200 hover:text-blue-400 bg-transparent border-none p-0 cursor-pointer transition-colors text-left"

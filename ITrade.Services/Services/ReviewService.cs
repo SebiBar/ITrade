@@ -35,6 +35,15 @@ namespace ITrade.Services.Services
         {
             ValidateReviewCreateRequest(createReviewRequest);
 
+            var workedTogether = await context.Projects.AnyAsync(p => 
+                (p.OwnerId == currentUserService.UserId && p.WorkerId == createReviewRequest.RevieweeId) ||
+                (p.OwnerId == createReviewRequest.RevieweeId && p.WorkerId == currentUserService.UserId));
+
+            if (!workedTogether)
+            {
+                throw new ArgumentException("You can only review users you have worked with.", nameof(createReviewRequest.RevieweeId));
+            }
+
             var review = new Review
             {
                 RevieweeId = createReviewRequest.RevieweeId,
