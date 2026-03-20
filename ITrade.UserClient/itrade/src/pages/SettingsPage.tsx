@@ -2,6 +2,7 @@ import { useUser } from '../context';
 import {
     ChangeUsernameSection,
     ChangePasswordSection,
+    MatchingPreferencesSection,
     DeleteAccountSection,
     LogoutSection,
 } from '../components/settings';
@@ -31,6 +32,9 @@ export default function SettingsPage() {
                         window.location.reload();
                     }}
                 />
+
+                {/* Preferences */}
+                <MatchingPreferencesSection />
 
                 {/* Security */}
                 <ChangePasswordSection />

@@ -31,6 +31,14 @@ export const SearchEntityType = {
 } as const;
 export type SearchEntityType = typeof SearchEntityType[keyof typeof SearchEntityType];
 
+// Matching Preferences
+export const MatchingPreferencesEnum = {
+    Balanced: 1,
+    PrioritizeSkills: 2,
+    PrioritizeReputation: 3,
+} as const;
+export type MatchingPreferencesEnum = typeof MatchingPreferencesEnum[keyof typeof MatchingPreferencesEnum];
+
 // Search Sort By
 export const SearchSortBy = {
     Relevance: 1,

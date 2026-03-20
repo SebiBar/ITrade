@@ -20,6 +20,7 @@ namespace ITrade.DB.Entities
         public bool Has2FA { get; set; } = false;
         public int UserRoleId { get; set; } 
         public UserRole UserRole { get; set; } = null!;
+        public UserMatchingPreferences? MatchingPreferences { get; set; }
         public ICollection<Token> Tokens { get; set; } = [];
         public ICollection<Project> OwnedProjects { get; set; } = [];
         public ICollection<Project> AssignedProjects { get; set; } = [];

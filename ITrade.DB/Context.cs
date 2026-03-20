@@ -8,6 +8,7 @@ namespace ITrade.DB
         public DbSet<SeedStatus> SeedStatuses { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<UserMatchingPreferences> UserMatchingPreferences { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<Token> Tokens { get; set; }
         public DbSet<TokenType> TokenTypes { get; set; }
@@ -28,6 +29,11 @@ namespace ITrade.DB
             modelBuilder.Entity<SeedStatus>()
                 .Property(x => x.ShouldSeedDatabase)
                 .HasDefaultValue(true);
+
+            modelBuilder.Entity<UserMatchingPreferences>()
+                .HasOne(mp => mp.User)
+                .WithOne(u => u.MatchingPreferences)
+                .HasForeignKey<UserMatchingPreferences>(mp => mp.UserId);
 
             //a project has a worker and an owner, users have owned and assigned projects
             modelBuilder.Entity<Project>()
@@ -71,6 +77,7 @@ namespace ITrade.DB
             modelBuilder.Entity<UserProfileLink>().HasQueryFilter(upl => !upl.User.IsDeleted);
             modelBuilder.Entity<UserProfileTag>().HasQueryFilter(upt => !upt.User.IsDeleted);
             modelBuilder.Entity<Review>().HasQueryFilter(r => !r.Reviewer.IsDeleted && !r.Reviewee.IsDeleted);
+            modelBuilder.Entity<UserMatchingPreferences>().HasQueryFilter(mp => !mp.User.IsDeleted);
 
         }
     }

@@ -53,6 +53,9 @@ builder.Services.Configure<MailJetSettings>(
 builder.Services.Configure<TemplateSettings>(
     builder.Configuration.GetSection("Templates"));
 
+builder.Services.Configure<MatchingSettings>(
+    builder.Configuration.GetSection(MatchingSettings.SectionName));
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
