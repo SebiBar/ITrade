@@ -10,6 +10,7 @@ import {
     ProfileProjectCard,
     ProfileReviewCard,
     WriteReviewForm as WriteReviewModal,
+    InviteModal,
 } from '../components/profile';
 import type { ProfileTab } from '../components/profile';
 
@@ -25,11 +26,13 @@ export default function ProfilePage() {
     const [isHardDeleting, setIsHardDeleting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
     const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showInviteModal, setShowInviteModal] = useState(false);
 
     const isOwnProfile = currentUser?.id === Number(userId);
     const isAdmin = currentUser?.role === 'Admin';
     const canReview = !isOwnProfile && !!currentUser && (currentUser.role === 'Specialist' || currentUser.role === 'Client');
-    const showActions = !isOwnProfile && !!currentUser && (canReview || isAdmin);
+    const canInvite = !isOwnProfile && !!currentUser && currentUser.role === 'Client';
+    const showActions = !isOwnProfile && !!currentUser && (canReview || isAdmin || canInvite);
 
     const fetchProfile = useCallback(async () => {
         if (!userId) return;
@@ -150,6 +153,15 @@ export default function ProfilePage() {
                                 </button>
                             )}
 
+                            {canInvite && (
+                                <button
+                                    onClick={() => setShowInviteModal(true)}
+                                    className="px-4 py-2 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                                >
+                                    Invite
+                                </button>
+                            )}
+
                             {isAdmin && (
                                 <button
                                     onClick={handleHardDeleteUser}
@@ -169,6 +181,14 @@ export default function ProfilePage() {
                         revieweeId={user.id}
                         onClose={() => setShowReviewModal(false)}
                         onReviewSubmitted={fetchProfile}
+                    />
+                )}
+
+                {/* Invite modal */}
+                {showInviteModal && (
+                    <InviteModal
+                        toBeInvitedId={user.id}
+                        onClose={() => setShowInviteModal(false)}
                     />
                 )}
 

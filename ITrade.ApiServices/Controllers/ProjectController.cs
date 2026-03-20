@@ -17,6 +17,12 @@ namespace ITrade.ApiServices.Controllers
             return Ok(await projectService.GetUserProjectsAsync());
         }
 
+        [HttpGet("open"), Authorize(Roles = "Client")]
+        public async Task<IActionResult> GetHiringProjects([FromQuery] int? toBeInvitedId)
+        {
+            return Ok(await projectService.GetUserHiringProjectsAsync(toBeInvitedId));
+        }
+
         [HttpGet("{projectId:int}")]
         public async Task<IActionResult> GetProject([FromRoute] int projectId)
         {

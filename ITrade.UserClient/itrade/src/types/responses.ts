@@ -42,6 +42,12 @@ export interface ProjectResponse {
     updatedAt: string;
 }
 
+export interface ProjectSummarizedResponse {
+    id: number;
+    name: string;
+    ownerId: number;
+}
+
 export interface ReviewResponse {
     id: number;
     reviewerId: number;

@@ -182,39 +182,42 @@ export default function ProfileDetails({
                         Links
                     </h3>
                     <div className="flex flex-wrap gap-3">
-                        {links.map(link => (
-                            <span key={link.id} className="inline-flex items-center gap-1.5">
-                                <a
-                                    href={link.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
-                                >
-                                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
-                                        <path
-                                            d="M6.5 3.5H3.5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1v-3m-4-7h5m0 0v5m0-5L7 9"
-                                            stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                    {(() => {
-                                        try {
-                                            return new URL(link.url).hostname.replace('www.', '');
-                                        } catch {
-                                            return link.url;
-                                        }
-                                    })()}
-                                </a>
-                                {isOwnProfile && (
-                                    <button
-                                        onClick={() => handleRemoveLink(link.id)}
-                                        className="text-slate-600 hover:text-red-400 bg-transparent border-none p-0 cursor-pointer transition-colors leading-none text-sm"
-                                        title="Remove link"
+                        {links.map(link => {
+                            const hrefUrl = link.url.match(/^https?:\/\//i) ? link.url : `https://${link.url}`;
+                            return (
+                                <span key={link.id} className="inline-flex items-center gap-1.5">
+                                    <a
+                                        href={hrefUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
                                     >
-                                        &times;
-                                    </button>
-                                )}
-                            </span>
-                        ))}
+                                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                                            <path
+                                                d="M6.5 3.5H3.5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1v-3m-4-7h5m0 0v5m0-5L7 9"
+                                                stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                        {(() => {
+                                            try {
+                                                return new URL(hrefUrl).hostname.replace(/^www\./i, '');
+                                            } catch {
+                                                return link.url;
+                                            }
+                                        })()}
+                                    </a>
+                                    {isOwnProfile && (
+                                        <button
+                                            onClick={() => handleRemoveLink(link.id)}
+                                            className="text-slate-600 hover:text-red-400 bg-transparent border-none p-0 cursor-pointer transition-colors leading-none text-sm"
+                                            title="Remove link"
+                                        >
+                                            &times;
+                                        </button>
+                                    )}
+                                </span>
+                            );
+                        })}
                     </div>
 
                     {/* Add link input */}

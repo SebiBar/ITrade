@@ -6,6 +6,7 @@ namespace ITrade.Services.Interfaces
     public interface IProjectService
     {
         Task<ICollection<ProjectResponse>> GetUserProjectsAsync();
+        Task<ICollection<ProjectSummarizedResponse>> GetUserHiringProjectsAsync(int? toBeInvitedId);
         Task<ProjectResponse> GetProjectAsync(int projectId);
         Task<int> CreateProjectAsync(ProjectRequest projectRequest);
         Task UpdateProjectAsync(int projectId, ProjectUpdateRequest projectRequest);

@@ -1,6 +1,6 @@
 import apiClient from './apiClient';
 import type { ProjectRequest, ProjectUpdateRequest } from '../types/requests';
-import type { ProjectResponse, ProjectTagResponse } from '../types/responses';
+import type { ProjectResponse, ProjectSummarizedResponse, ProjectTagResponse } from '../types/responses';
 
 export const projectService = {
     /**
@@ -8,6 +8,14 @@ export const projectService = {
      */
     async getUserProjects(): Promise<ProjectResponse[]> {
         const response = await apiClient.get<ProjectResponse[]>('/projects');
+        return response.data;
+    },
+
+    /**
+     * Get all hiring projects for client (Client only)
+     */
+    async getUserOpenProjects(toBeInvitedId: number | null): Promise<ProjectSummarizedResponse[]> {
+        const response = await apiClient.get<ProjectSummarizedResponse[]>('/projects/open', { params: { toBeInvitedId } });
         return response.data;
     },
 

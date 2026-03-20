@@ -73,6 +73,33 @@ namespace ITrade.Services.Services
             }
         }
 
+        public async Task<ICollection<ProjectSummarizedResponse>> GetUserHiringProjectsAsync(int? toBeInvitedId)
+        {
+            if (currentUserService.UserRole != UserRoleEnum.Client)
+            {
+                throw new InvalidOperationException("Only clients can have projects.");
+            }
+
+            var query = context.Projects
+                .Where(p => p.OwnerId == currentUserService.UserId && p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.Hiring);
+
+            if (toBeInvitedId != null)
+            {
+                query = query.Where(p => !p.Requests.Any(r =>
+                    (r.RequestTypeId == (int)ProjectRequestTypeEnum.Invitation && r.ReceiverId == toBeInvitedId)
+                    ||
+                    (r.RequestTypeId == (int)ProjectRequestTypeEnum.Application && r.SenderId == toBeInvitedId)));
+            }
+
+            return await query
+                .Select(p => new ProjectSummarizedResponse(
+                    p.Id,
+                    p.Name,
+                    p.OwnerId
+                ))
+                .ToListAsync();
+        }
+
         public async Task<ProjectResponse> GetProjectAsync(int projectId)
         {
             return await context.Projects

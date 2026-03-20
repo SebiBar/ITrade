@@ -6,3 +6,4 @@ export { default as ProfileReviewCard } from './ProfileReviewCard';
 export { default as StarRating } from './StarRating';
 export { default as WriteReviewForm } from './WriteReviewForm';
 export type { ProfileTab } from './ProfileTabs';
+export { default as InviteModal } from './InviteModal';

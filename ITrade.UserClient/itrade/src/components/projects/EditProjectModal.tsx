@@ -31,6 +31,18 @@ export default function EditProjectModal({ project, onClose, onUpdated }: EditPr
     const [error, setError] = useState<string | null>(null);
     const currentTagsRef = useRef(currentTags);
     currentTagsRef.current = currentTags;
+    const panelRef = useRef<HTMLDivElement>(null);
+
+    // Close on click outside
+    useEffect(() => {
+        const handleClick = (e: MouseEvent) => {
+            if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+                onClose();
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, [onClose]);
 
     // Search tags with debounce
     useEffect(() => {
@@ -102,7 +114,7 @@ export default function EditProjectModal({ project, onClose, onUpdated }: EditPr
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-lg mx-4 bg-[#0f1f3d] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+            <div ref={panelRef} className="w-full max-w-lg mx-4 bg-[#0f1f3d] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
                     <h2 className="text-lg font-bold text-slate-200 m-0">Edit Project</h2>
