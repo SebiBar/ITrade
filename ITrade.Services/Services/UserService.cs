@@ -252,5 +252,47 @@ namespace ITrade.Services.Services
 
             await context.SaveChangesAsync();
         }
+
+        public async Task UpdateMatchingPreferencesAsync(MatchingPreferencesEnum preference)
+        {
+            var userId = currentUserService.UserId;
+
+            var percentages = preference switch
+            {
+                MatchingPreferencesEnum.Balanced => (TagMatch: 60, Experience: 20, Reviews: 20),
+                MatchingPreferencesEnum.PrioritizeSkills => (TagMatch: 80, Experience: 10, Reviews: 10),
+                MatchingPreferencesEnum.PrioritizeReputation => (TagMatch: 40, Experience: 30, Reviews: 30),
+                _ => throw new ArgumentOutOfRangeException(nameof(preference), "Invalid matching preference option.")
+            };
+
+            var user = await context.Users
+                .Where(u => u.Id == userId)
+                .Select(u => new { u.Id })
+                .FirstOrDefaultAsync()
+                ?? throw new KeyNotFoundException("User not found.");
+
+            var existingPreferences = await context.UserMatchingPreferences
+                .FirstOrDefaultAsync(p => p.UserId == user.Id);
+
+            if (existingPreferences is null)
+            {
+                await context.UserMatchingPreferences.AddAsync(new UserMatchingPreferences
+                {
+                    UserId = user.Id,
+                    TagMatchMaxPercentage = percentages.TagMatch,
+                    ExperienceMaxPercentage = percentages.Experience,
+                    ReviewsMaxPercentage = percentages.Reviews
+                });
+            }
+            else
+            {
+                existingPreferences.TagMatchMaxPercentage = percentages.TagMatch;
+                existingPreferences.ExperienceMaxPercentage = percentages.Experience;
+                existingPreferences.ReviewsMaxPercentage = percentages.Reviews;
+                existingPreferences.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await context.SaveChangesAsync();
+        }
     }
 }

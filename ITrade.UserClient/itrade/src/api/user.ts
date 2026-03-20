@@ -35,6 +35,15 @@ export const userService = {
     },
 
     /**
+     * Update matching preferences
+     */
+    async updateMatchingPreferences(preference: number): Promise<void> {
+        await apiClient.put('/user/matching-preferences', null, {
+            params: { preference },
+        });
+    },
+
+    /**
      * Add a profile tag (Specialist/Admin only)
      */
     async addProfileTag(tagId: number): Promise<UserProfileTagResponse> {

@@ -21,7 +21,8 @@ namespace ITrade.Services.Services
         ICurrentUserService currentUserService,
         IHttpContextAccessor httpContextAccessor,
         IOptions<TemplateSettings> templateSettings,
-        IOptions<UrlSettings> urlSettings
+        IOptions<UrlSettings> urlSettings,
+        IOptions<MatchingSettings> matchingSettings
     ) : IAuthService
     {
         public async Task RegisterAsync(RegisterRequest registerRequest)
@@ -38,6 +39,15 @@ namespace ITrade.Services.Services
             user.PasswordHash = hasher.HashPassword(user, registerRequest.Password);
 
             await context.Users.AddAsync(user);
+            await context.SaveChangesAsync();
+
+            await context.UserMatchingPreferences.AddAsync(new UserMatchingPreferences
+            {
+                UserId = user.Id,
+                TagMatchMaxPercentage = Math.Clamp(matchingSettings.Value.DefaultTagMatchMaxPercentage, 0, 100),
+                ExperienceMaxPercentage = Math.Clamp(matchingSettings.Value.DefaultExperienceMaxPercentage, 0, 100),
+                ReviewsMaxPercentage = Math.Clamp(matchingSettings.Value.DefaultReviewsMaxPercentage, 0, 100)
+            });
             await context.SaveChangesAsync();
 
             var token = await tokenService.CreateVerifyEmailTokenAsync(user.Id);

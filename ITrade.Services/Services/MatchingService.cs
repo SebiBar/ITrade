@@ -1,17 +1,32 @@
-﻿using ITrade.DB;
+﻿using ITrade.Common.Helpers;
+using ITrade.DB;
 using ITrade.DB.Enums;
 using ITrade.Services.Interfaces;
 using ITrade.Services.Responses;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace ITrade.Services.Services
 {
     public class MatchingService(
         Context context,
-        ICurrentUserService currentUserService
+        ICurrentUserService currentUserService,
+        IOptions<MatchingSettings> matchingOptions
     ) : IMatchingService
     {
-        private const int MaxRecommendations = 10;
+        private readonly MatchingSettings options = matchingOptions.Value;
+
+        private sealed record ResolvedMatchingPreferences(
+            int TagMatchMaxPercentage,
+            int ExperienceMaxPercentage,
+            int ReviewsMaxPercentage);
+
+        private sealed record SpecialistScoringInput(
+            HashSet<int> TagIds,
+            Dictionary<int, int> ExperienceTagCounts,
+            double? AverageRating,
+            int ActiveProjectCount,
+            DateTime CreatedAt);
 
         public async Task<IDictionary<(int SpecialistId, int ProjectId), double>> ComputeMatchScoresAsync(
             ICollection<(int SpecialistId, int ProjectId)> pairs)
@@ -24,7 +39,8 @@ namespace ITrade.Services.Services
             var specialistIds = pairs.Select(p => p.SpecialistId).Distinct().ToList();
             var projectIds = pairs.Select(p => p.ProjectId).Distinct().ToList();
 
-            // 1. Batch fetch all project tags
+            var viewerPreferences = await GetPreferencesForUserAsync(currentUserService.UserId);
+
             var projectTagRows = await context.ProjectTags
                 .Where(pt => projectIds.Contains(pt.ProjectId))
                 .Select(pt => new { pt.ProjectId, pt.TagId })
@@ -34,56 +50,23 @@ namespace ITrade.Services.Services
                 .GroupBy(r => r.ProjectId)
                 .ToDictionary(g => g.Key, g => g.Select(r => r.TagId).ToHashSet());
 
-            // 2. Batch fetch all specialist profile tags
-            var specialistTagRows = await context.UserProfileTags
-                .Where(upt => specialistIds.Contains(upt.UserId))
-                .Select(upt => new { upt.UserId, upt.TagId })
-                .ToListAsync();
-
-            var tagsBySpecialist = specialistTagRows
-                .GroupBy(r => r.UserId)
-                .ToDictionary(g => g.Key, g => g.Select(r => r.TagId).ToHashSet());
-
-            // 3. Batch fetch experience data (completed projects with matching tags)
             var allTagIds = tagsByProject.Values.SelectMany(t => t).Distinct().ToList();
+            var specialistInputs = await GetSpecialistScoringInputsAsync(specialistIds, allTagIds);
 
-            var experienceRows = await context.Projects
-                .Where(p => specialistIds.Contains(p.WorkerId ?? 0)
-                    && p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.Completed)
-                .SelectMany(p => p.ProjectTags.Select(pt => new { p.WorkerId, pt.TagId }))
-                .Where(x => allTagIds.Contains(x.TagId))
-                .ToListAsync();
-
-            var experienceBySpecialist = experienceRows
-                .GroupBy(r => r.WorkerId!.Value)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.GroupBy(x => x.TagId).ToDictionary(tg => tg.Key, tg => tg.Count()));
-
-            // 4. Batch fetch average ratings for all specialists
-            var ratingRows = await context.Users
-                .Where(u => specialistIds.Contains(u.Id))
-                .Select(u => new
-                {
-                    u.Id,
-                    AverageRating = u.ReceivedReviews.Any()
-                        ? u.ReceivedReviews.Average(r => r.Rating)
-                        : (double?)null
-                })
-                .ToListAsync();
-
-            var ratingsBySpecialist = ratingRows.ToDictionary(r => r.Id, r => r.AverageRating);
-
-            // 5. Calculate scores for each pair
             var result = new Dictionary<(int, int), double>();
 
             foreach (var (specialistId, projectId) in pairs)
             {
+                if (!specialistInputs.TryGetValue(specialistId, out var specialistInput))
+                {
+                    result[(specialistId, projectId)] = 0;
+                    continue;
+                }
+
                 var score = CalculateMatchScore(
-                    tagsBySpecialist.GetValueOrDefault(specialistId) ?? [],
+                    specialistInput,
                     tagsByProject.GetValueOrDefault(projectId) ?? [],
-                    experienceBySpecialist.GetValueOrDefault(specialistId) ?? [],
-                    ratingsBySpecialist.GetValueOrDefault(specialistId));
+                    viewerPreferences);
 
                 result[(specialistId, projectId)] = score;
             }
@@ -91,84 +74,79 @@ namespace ITrade.Services.Services
             return result;
         }
 
-        /// <summary>
-        /// Calculates a match score (0-100) based on:
-        /// - Tag match percentage (base score, up to 60%)
-        /// - Experience bonus (up to 20% based on completed projects with matching tags)
-        /// - Review rating bonus/penalty (up to +-20% based on average rating)
-        /// </summary>
-        private static double CalculateMatchScore(
-            HashSet<int> specialistTags,
+        private double CalculateMatchScore(
+            SpecialistScoringInput specialist,
             HashSet<int> projectTags,
-            Dictionary<int, int> tagExperience,
-            double? averageRating)
+            ResolvedMatchingPreferences preferences)
         {
-            if (projectTags.Count == 0 || specialistTags.Count == 0)
+            if (projectTags.Count == 0 || specialist.TagIds.Count == 0)
             {
                 return 0;
             }
 
-            var matchingTags = specialistTags.Intersect(projectTags).ToList();
+            var matchingTags = specialist.TagIds.Intersect(projectTags).ToList();
             if (matchingTags.Count == 0)
             {
                 return 0;
             }
 
-            // Base score: tag match percentage scaled to 60% max
-            var matchPercentage = (double)matchingTags.Count / projectTags.Count;
-            var baseScore = matchPercentage * 60;
-
-            // Experience bonus: up to 20% based on completed projects with matching tags
-            var experienceScore = matchingTags.Sum(tagId => tagExperience.GetValueOrDefault(tagId, 0));
-            var experienceBonus = Math.Min(experienceScore * 2, 20);
-
-            // Review rating modifier: -20% to +20% based on average rating (1-5 scale)
-            // No reviews = neutral (0), 3 stars = neutral, 5 stars = +20%, 1 star = -20%
-            double ratingModifier = 0;
-            if (averageRating.HasValue)
+            var baseScore = 0d;
+            if (preferences.TagMatchMaxPercentage > 0)
             {
-                // Map 1-5 rating to -20 to +20 range: (rating - 3) * 10
-                ratingModifier = (averageRating.Value - 3) * 10;
+                var matchPercentage = (double)matchingTags.Count / projectTags.Count;
+                baseScore = matchPercentage * preferences.TagMatchMaxPercentage;
             }
 
-            var totalScore = baseScore + experienceBonus + ratingModifier;
+            var experienceBonus = 0d;
+            if (preferences.ExperienceMaxPercentage > 0)
+            {
+                var experienceScore = matchingTags.Sum(tagId => specialist.ExperienceTagCounts.GetValueOrDefault(tagId, 0));
+                experienceBonus = Math.Min(
+                    experienceScore * options.ExperiencePointsPerCompletedProject,
+                    preferences.ExperienceMaxPercentage);
+            }
+
+            var reviewsScore = 0d;
+            if (preferences.ReviewsMaxPercentage > 0)
+            {
+                reviewsScore = specialist.AverageRating.HasValue
+                    ? (specialist.AverageRating.Value - 3) * (preferences.ReviewsMaxPercentage / 2d)
+                    : GetMedianBonusForNewAccount(specialist.CreatedAt, preferences.ReviewsMaxPercentage);
+            }
+
+            var availabilityPenalty = options.AvailabilityPenaltyPerActiveProject > 0
+                ? specialist.ActiveProjectCount * options.AvailabilityPenaltyPerActiveProject
+                : 0;
+
+            var totalScore = baseScore + experienceBonus + reviewsScore - availabilityPenalty;
             return Math.Round(Math.Clamp(totalScore, 0, 100), 1);
+        }
+
+        private double GetMedianBonusForNewAccount(DateTime accountCreatedAt, int reviewsMaxPercentage)
+        {
+            var recentDays = Math.Max(0, options.RecentAccountDaysForMedianReviewBonus);
+            if (recentDays == 0)
+            {
+                return 0;
+            }
+
+            var isRecentAccount = accountCreatedAt >= DateTime.UtcNow.AddDays(-recentDays);
+            return isRecentAccount ? reviewsMaxPercentage / 2d : 0;
         }
 
         public async Task<ICollection<ProjectMatchedResponse>> RecommandProjectsForSpecialist()
         {
             var userId = currentUserService.UserId;
+            var viewerPreferences = await GetPreferencesForUserAsync(userId);
 
-            // Get the specialist's profile tags
-            var specialistTagIds = await context.UserProfileTags
-                .Where(upt => upt.UserId == userId)
-                .Select(upt => upt.TagId)
-                .ToHashSetAsync();
-
-            if (specialistTagIds.Count == 0)
+            var specialistInputs = await GetSpecialistScoringInputsAsync([userId], []);
+            if (!specialistInputs.TryGetValue(userId, out var specialistInput) || specialistInput.TagIds.Count == 0)
             {
                 return [];
             }
 
-            // Get the specialist's completed project tag experience (how many times worked on projects with each tag)
-            var tagExperience = await context.Projects
-                .Where(p => p.WorkerId == userId
-                    && p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.Completed)
-                .SelectMany(p => p.ProjectTags)
-                .GroupBy(pt => pt.TagId)
-                .Select(g => new { TagId = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.TagId, x => x.Count);
+            var specialistTagIds = specialistInput.TagIds;
 
-            // Get the specialist's average rating
-            var specialistRating = await context.Users
-                .Where(u => u.Id == userId)
-                .Select(u => u.ReceivedReviews.Any()
-                    ? (double?)u.ReceivedReviews.Average(r => r.Rating)
-                    : null)
-                .FirstOrDefaultAsync();
-
-            // Find open projects (Hiring status, no worker assigned) that match specialist's tags
-            // Exclude projects the specialist has already applied to or been invited to
             var matchingProjects = await context.Projects
                 .Where(p => !p.IsDeleted
                     && p.WorkerId == null
@@ -198,25 +176,15 @@ namespace ITrade.Services.Services
                 })
                 .ToListAsync();
 
-            // Calculate match score for each project
             var scoredProjects = matchingProjects
-                .Select(p =>
+                .Select(p => new
                 {
-                    var score = CalculateMatchScore(
-                        specialistTagIds,
-                        p.ProjectTagIds,
-                        tagExperience,
-                        specialistRating);
-
-                    return new
-                    {
-                        p.Project,
-                        Score = score
-                    };
+                    p.Project,
+                    Score = CalculateMatchScore(specialistInput, p.ProjectTagIds, viewerPreferences)
                 })
                 .Where(p => p.Score > 0)
                 .OrderByDescending(p => p.Score)
-                .Take(MaxRecommendations)
+                .Take(options.MaxRecommendations)
                 .Select(p => new ProjectMatchedResponse(p.Project, p.Score))
                 .ToList();
 
@@ -236,18 +204,17 @@ namespace ITrade.Services.Services
                 return new Dictionary<int, ICollection<UserMatchedResponse>>();
             }
 
-            // Get all tags for all requested projects
+            var viewerPreferences = await GetPreferencesForUserAsync(currentUserService.UserId);
+
             var projectTagRows = await context.ProjectTags
                 .Where(pt => projectIds.Contains(pt.ProjectId))
                 .Select(pt => new { pt.ProjectId, pt.TagId })
                 .ToListAsync();
 
-            // Build per-project tag dictionaries
             var tagsByProject = projectTagRows
                 .GroupBy(r => r.ProjectId)
                 .ToDictionary(g => g.Key, g => g.Select(r => r.TagId).ToHashSet());
 
-            // Collect the union of all tag IDs across every project
             var allTagIds = tagsByProject.Values.SelectMany(t => t).Distinct().ToList();
 
             if (allTagIds.Count == 0)
@@ -257,10 +224,10 @@ namespace ITrade.Services.Services
 
             var involvedSpecialistsByProject = await context.Requests
                 .Where(r => projectIds.Contains(r.ProjectId))
-                .Select(r => new 
-                { 
-                    r.ProjectId, 
-                    SpecialistId = r.RequestTypeId == (int)ProjectRequestTypeEnum.Invitation ? r.ReceiverId : r.SenderId 
+                .Select(r => new
+                {
+                    r.ProjectId,
+                    SpecialistId = r.RequestTypeId == (int)ProjectRequestTypeEnum.Invitation ? r.ReceiverId : r.SenderId
                 })
                 .ToListAsync();
 
@@ -268,40 +235,21 @@ namespace ITrade.Services.Services
                 .GroupBy(r => r.ProjectId)
                 .ToDictionary(g => g.Key, g => g.Select(r => r.SpecialistId).ToHashSet());
 
-            // Find all specialists whose profile tags overlap with any of those tags
-            var matchingSpecialistsRaw = await context.Users
+            var specialistIds = await context.Users
                 .Where(u => !u.IsDeleted
                     && u.UserRoleId == (int)UserRoleEnum.Specialist
                     && u.UserProfileTags.Any(upt => allTagIds.Contains(upt.TagId)))
-                .Select(u => new
-                {
-                    User = new UserResponse(u.Id, u.Username, u.UserRole.Name),
-                    UserTagIds = u.UserProfileTags.Select(upt => upt.TagId).ToList(),
-                    ExperienceTagCounts = u.AssignedProjects
-                        .Where(p => p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.Completed)
-                        .SelectMany(p => p.ProjectTags)
-                        .Where(pt => allTagIds.Contains(pt.TagId))
-                        .GroupBy(pt => pt.TagId)
-                        .Select(g => new { TagId = g.Key, Count = g.Count() })
-                        .ToList(),
-                    AverageRating = u.ReceivedReviews.Any()
-                        ? (double?)u.ReceivedReviews.Average(r => r.Rating)
-                        : null
-                })
+                .Select(u => u.Id)
                 .ToListAsync();
 
-            // Convert to in-memory collections for efficient scoring
-            var matchingSpecialists = matchingSpecialistsRaw
-                .Select(s => new
-                {
-                    s.User,
-                    UserTagIds = s.UserTagIds.ToHashSet(),
-                    ExperienceTagCounts = s.ExperienceTagCounts.ToDictionary(x => x.TagId, x => x.Count),
-                    s.AverageRating
-                })
-                .ToList();
+            var specialistInputs = await GetSpecialistScoringInputsAsync(specialistIds, allTagIds);
 
-            // In-memory: score each specialist per project and build the result dictionary
+            var matchingSpecialists = await context.Users
+                .Where(u => specialistIds.Contains(u.Id))
+                .Select(u => new UserResponse(u.Id, u.Username, u.UserRole.Name))
+                .ToListAsync();
+
+            var userById = matchingSpecialists.ToDictionary(u => u.Id, u => u);
             var result = new Dictionary<int, ICollection<UserMatchedResponse>>();
 
             foreach (var projectId in projectIds)
@@ -312,37 +260,130 @@ namespace ITrade.Services.Services
                     continue;
                 }
 
-                // Get specialists already involved with this project (invited or applied)
                 var involvedSpecialists = involvedSpecialistsLookup.GetValueOrDefault(projectId) ?? [];
 
-                var scored = matchingSpecialists
-                    .Where(s => !involvedSpecialists.Contains(s.User.Id))
-                    .Select(s =>
+                var scored = specialistInputs
+                    .Where(s => !involvedSpecialists.Contains(s.Key) && userById.ContainsKey(s.Key))
+                    .Select(s => new
                     {
-                        var score = CalculateMatchScore(
-                            s.UserTagIds,
-                            projectTagIds,
-                            s.ExperienceTagCounts,
-                            s.AverageRating);
-
-                        if (score == 0) return null;
-
-                        return new
-                        {
-                            s.User,
-                            Score = score
-                        };
+                        User = userById[s.Key],
+                        Score = CalculateMatchScore(s.Value, projectTagIds, viewerPreferences)
                     })
-                    .Where(s => s != null)
-                    .OrderByDescending(s => s!.Score)
-                    .Take(MaxRecommendations)
-                    .Select(s => new UserMatchedResponse(s!.User, s.Score))
+                    .Where(s => s.Score > 0)
+                    .OrderByDescending(s => s.Score)
+                    .Take(options.MaxRecommendations)
+                    .Select(s => new UserMatchedResponse(s.User, s.Score))
                     .ToList();
 
                 result[projectId] = scored;
             }
 
             return result;
+        }
+
+        private async Task<Dictionary<int, SpecialistScoringInput>> GetSpecialistScoringInputsAsync(
+            ICollection<int> specialistIds,
+            ICollection<int> relevantTagIds)
+        {
+            if (specialistIds.Count == 0)
+            {
+                return [];
+            }
+
+            var specialistTagRows = await context.UserProfileTags
+                .Where(upt => specialistIds.Contains(upt.UserId))
+                .Select(upt => new { upt.UserId, upt.TagId })
+                .ToListAsync();
+
+            var tagsBySpecialist = specialistTagRows
+                .GroupBy(r => r.UserId)
+                .ToDictionary(g => g.Key, g => g.Select(r => r.TagId).ToHashSet());
+
+            var experienceQuery = context.Projects
+                .Where(p => specialistIds.Contains(p.WorkerId ?? 0)
+                    && p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.Completed)
+                .SelectMany(p => p.ProjectTags.Select(pt => new { p.WorkerId, pt.TagId }));
+
+            if (relevantTagIds.Count > 0)
+            {
+                experienceQuery = experienceQuery.Where(x => relevantTagIds.Contains(x.TagId));
+            }
+
+            var experienceRows = await experienceQuery.ToListAsync();
+
+            var experienceBySpecialist = experienceRows
+                .GroupBy(r => r.WorkerId!.Value)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.GroupBy(x => x.TagId).ToDictionary(tg => tg.Key, tg => tg.Count()));
+
+            var specialistRows = await context.Users
+                .Where(u => specialistIds.Contains(u.Id))
+                .Select(u => new
+                {
+                    u.Id,
+                    u.CreatedAt,
+                    AverageRating = u.ReceivedReviews.Any()
+                        ? u.ReceivedReviews.Average(r => r.Rating)
+                        : (double?)null,
+                    ActiveProjectCount = u.AssignedProjects.Count(p =>
+                        p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.InProgress
+                        || p.ProjectStatusTypeId == (int)ProjectStatusTypeEnum.OnHold)
+                })
+                .ToListAsync();
+
+            var result = new Dictionary<int, SpecialistScoringInput>();
+
+            foreach (var specialist in specialistRows)
+            {
+                result[specialist.Id] = new SpecialistScoringInput(
+                    tagsBySpecialist.GetValueOrDefault(specialist.Id) ?? [],
+                    experienceBySpecialist.GetValueOrDefault(specialist.Id) ?? [],
+                    specialist.AverageRating,
+                    specialist.ActiveProjectCount,
+                    specialist.CreatedAt);
+            }
+
+            return result;
+        }
+
+        private async Task<ResolvedMatchingPreferences> GetPreferencesForUserAsync(int userId)
+        {
+            var userPreferences = await context.UserMatchingPreferences
+                .Where(p => p.UserId == userId)
+                .Select(p => new
+                {
+                    p.TagMatchMaxPercentage,
+                    p.ExperienceMaxPercentage,
+                    p.ReviewsMaxPercentage
+                })
+                .FirstOrDefaultAsync();
+
+            if (userPreferences is null)
+            {
+                return ResolvePreferences(null, null, null);
+            }
+
+            return ResolvePreferences(
+                userPreferences.TagMatchMaxPercentage,
+                userPreferences.ExperienceMaxPercentage,
+                userPreferences.ReviewsMaxPercentage);
+        }
+
+        private ResolvedMatchingPreferences ResolvePreferences(
+            int? tagMatchMaxPercentage,
+            int? experienceMaxPercentage,
+            int? reviewsMaxPercentage)
+        {
+            return new ResolvedMatchingPreferences(
+                ClampPercentage(tagMatchMaxPercentage ?? options.DefaultTagMatchMaxPercentage),
+                ClampPercentage(experienceMaxPercentage ?? options.DefaultExperienceMaxPercentage),
+                ClampPercentage(reviewsMaxPercentage ?? options.DefaultReviewsMaxPercentage));
+        }
+
+        private static int ClampPercentage(int value)
+        {
+            return Math.Clamp(value, 0, 100);
         }
     }
 }

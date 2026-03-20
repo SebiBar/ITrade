@@ -1,4 +1,5 @@
-﻿using ITrade.Services.Interfaces;
+﻿using ITrade.DB.Enums;
+using ITrade.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,6 +52,13 @@ namespace ITrade.ApiServices.Controllers
         public async Task<IActionResult> RemoveProfileLink([FromRoute] int profileLinkId)
         {
             await userService.RemoveProfileLinkAsync(profileLinkId);
+            return Ok();
+        }
+
+        [HttpPut("matching-preferences")]
+        public async Task<IActionResult> UpdateMatchingPreferences([FromQuery] MatchingPreferencesEnum preference)
+        {
+            await userService.UpdateMatchingPreferencesAsync(preference);
             return Ok();
         }
 
