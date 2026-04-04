@@ -35,6 +35,14 @@ namespace ITrade.Services.Services
         {
             ValidateReviewCreateRequest(createReviewRequest);
 
+            var alreadyReviewed = await context.Reviews.AnyAsync(r => 
+                r.ReviewerId == currentUserService.UserId && r.RevieweeId == createReviewRequest.RevieweeId);
+
+            if (alreadyReviewed)
+            {
+                throw new ArgumentException("You have already reviewed this user.", nameof(createReviewRequest.RevieweeId));
+            }
+
             var workedTogether = await context.Projects.AnyAsync(p => 
                 (p.OwnerId == currentUserService.UserId && p.WorkerId == createReviewRequest.RevieweeId) ||
                 (p.OwnerId == createReviewRequest.RevieweeId && p.WorkerId == currentUserService.UserId));

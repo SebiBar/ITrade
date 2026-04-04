@@ -4,7 +4,6 @@ interface SettingsSectionProps {
     title: string;
     subtitle?: string;
     children: ReactNode;
-    /** Optional red/danger border styling */
     danger?: boolean;
 }
 
@@ -18,8 +17,8 @@ export default function SettingsSection({
     return (
         <section
             className={`flex flex-col gap-5 p-6 rounded-2xl border ${danger
-                    ? 'bg-red-500/[0.03] border-red-500/15'
-                    : 'bg-white/[0.03] border-white/[0.06]'
+                ? 'bg-red-500/[0.03] border-red-500/15'
+                : 'bg-white/[0.03] border-white/[0.06]'
                 }`}
         >
             <div className="flex flex-col gap-1">

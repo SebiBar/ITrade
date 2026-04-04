@@ -69,8 +69,6 @@ namespace ITrade.ApiServices.Helpers
                 new Tag { Name = "Web Development" },
                 new Tag { Name = "Database Design" },
                 new Tag { Name = "Cloud Architecture" },
-                
-                // Expanded Tags
                 new Tag { Name = "AWS" },
                 new Tag { Name = "Vue.js" },
                 new Tag { Name = "Angular" },
@@ -100,6 +98,10 @@ namespace ITrade.ApiServices.Helpers
                 CreateUser("client4@test.com", "ClientDavid", UserRoleEnum.Client, -40),
                 CreateUser("client5@test.com", "ClientEmma", UserRoleEnum.Client, -35),
                 CreateUser("client6@test.com", "ClientFrank", UserRoleEnum.Client, -20),
+                CreateUser("client7@test.com", "ClientGrace", UserRoleEnum.Client, -42),
+                CreateUser("client8@test.com", "ClientHenry", UserRoleEnum.Client, -38),
+                CreateUser("client9@test.com", "ClientIsla", UserRoleEnum.Client, -33),
+                CreateUser("client10@test.com", "ClientJason", UserRoleEnum.Client, -29),
 
                 // Specialists
                 CreateUser("specialist1@test.com", "SpecialistDana", UserRoleEnum.Specialist, -58),
@@ -110,6 +112,14 @@ namespace ITrade.ApiServices.Helpers
                 CreateUser("specialist6@test.com", "SpecialistIan", UserRoleEnum.Specialist, -25),
                 CreateUser("specialist7@test.com", "SpecialistJack", UserRoleEnum.Specialist, -15),
                 CreateUser("specialist8@test.com", "SpecialistKaren", UserRoleEnum.Specialist, -10),
+                CreateUser("specialist9@test.com", "SpecialistLiam", UserRoleEnum.Specialist, -120),
+                CreateUser("specialist10@test.com", "SpecialistMia", UserRoleEnum.Specialist, -95),
+                CreateUser("specialist11@test.com", "SpecialistNoah", UserRoleEnum.Specialist, -70),
+                CreateUser("specialist12@test.com", "SpecialistOlivia", UserRoleEnum.Specialist, -85),
+                CreateUser("specialist13@test.com", "SpecialistPeter", UserRoleEnum.Specialist, -12),
+                CreateUser("specialist14@test.com", "SpecialistQuinn", UserRoleEnum.Specialist, -200),
+                CreateUser("specialist15@test.com", "SpecialistRiley", UserRoleEnum.Specialist, -35),
+                CreateUser("specialist16@test.com", "SpecialistSophia", UserRoleEnum.Specialist, -55),
 
                 // Admin
                 CreateUser("admin@test.com", "AdminHelen", UserRoleEnum.Admin, -90)
@@ -204,6 +214,70 @@ namespace ITrade.ApiServices.Helpers
                 userProfileTags.AddRange(karenTags.Select(t => new UserProfileTag { UserId = karen.Id, TagId = t.Id, TagName = t.Name }));
             }
 
+            // Liam - Distributed systems backend specialist
+            var liam = specialists.FirstOrDefault(s => s.Username == "SpecialistLiam");
+            if (liam != null)
+            {
+                var liamTags = tags.Where(t => t.Name is "C#" or ".NET" or "REST API" or "SQL" or "Cloud Architecture").ToList();
+                userProfileTags.AddRange(liamTags.Select(t => new UserProfileTag { UserId = liam.Id, TagId = t.Id, TagName = t.Name }));
+            }
+
+            // Mia - Data/AI specialist
+            var mia = specialists.FirstOrDefault(s => s.Username == "SpecialistMia");
+            if (mia != null)
+            {
+                var miaTags = tags.Where(t => t.Name is "Python" or "Machine Learning" or "Data Science" or "SQL" or "Azure").ToList();
+                userProfileTags.AddRange(miaTags.Select(t => new UserProfileTag { UserId = mia.Id, TagId = t.Id, TagName = t.Name }));
+            }
+
+            // Noah - Mobile product specialist
+            var noah = specialists.FirstOrDefault(s => s.Username == "SpecialistNoah");
+            if (noah != null)
+            {
+                var noahTags = tags.Where(t => t.Name is "Mobile Development" or "UI/UX Design" or "TypeScript" or "React" or "Web Development").ToList();
+                userProfileTags.AddRange(noahTags.Select(t => new UserProfileTag { UserId = noah.Id, TagId = t.Id, TagName = t.Name }));
+            }
+
+            // Olivia - Security and platform specialist
+            var olivia = specialists.FirstOrDefault(s => s.Username == "SpecialistOlivia");
+            if (olivia != null)
+            {
+                var oliviaTags = tags.Where(t => t.Name is "Cybersecurity" or "DevOps" or "Docker" or "Kubernetes" or "AWS").ToList();
+                userProfileTags.AddRange(oliviaTags.Select(t => new UserProfileTag { UserId = olivia.Id, TagId = t.Id, TagName = t.Name }));
+            }
+
+            // Peter - Junior frontend specialist
+            var peter = specialists.FirstOrDefault(s => s.Username == "SpecialistPeter");
+            if (peter != null)
+            {
+                var peterTags = tags.Where(t => t.Name is "JavaScript" or "TypeScript" or "React" or "Web Development").ToList();
+                userProfileTags.AddRange(peterTags.Select(t => new UserProfileTag { UserId = peter.Id, TagId = t.Id, TagName = t.Name }));
+            }
+
+            // Quinn - Enterprise architecture specialist
+            var quinn = specialists.FirstOrDefault(s => s.Username == "SpecialistQuinn");
+            if (quinn != null)
+            {
+                var quinnTags = tags.Where(t => t.Name is "Java" or "Spring Boot" or "Cloud Architecture" or "Database Design" or "DevOps").ToList();
+                userProfileTags.AddRange(quinnTags.Select(t => new UserProfileTag { UserId = quinn.Id, TagId = t.Id, TagName = t.Name }));
+            }
+
+            // Riley - API and data integration specialist
+            var riley = specialists.FirstOrDefault(s => s.Username == "SpecialistRiley");
+            if (riley != null)
+            {
+                var rileyTags = tags.Where(t => t.Name is "REST API" or "GraphQL" or "Node.js" or "SQL" or "Database Design").ToList();
+                userProfileTags.AddRange(rileyTags.Select(t => new UserProfileTag { UserId = riley.Id, TagId = t.Id, TagName = t.Name }));
+            }
+
+            // Sophia - Blockchain and full stack specialist
+            var sophia = specialists.FirstOrDefault(s => s.Username == "SpecialistSophia");
+            if (sophia != null)
+            {
+                var sophiaTags = tags.Where(t => t.Name is "Blockchain" or "Cybersecurity" or "TypeScript" or "React" or "REST API").ToList();
+                userProfileTags.AddRange(sophiaTags.Select(t => new UserProfileTag { UserId = sophia.Id, TagId = t.Id, TagName = t.Name }));
+            }
+
             database.UserProfileTags.AddRange(userProfileTags);
             await database.SaveChangesAsync();
         }
@@ -219,6 +293,10 @@ namespace ITrade.ApiServices.Helpers
             var david = clients.FirstOrDefault(c => c.Username == "ClientDavid");
             var emma = clients.FirstOrDefault(c => c.Username == "ClientEmma");
             var frank = clients.FirstOrDefault(c => c.Username == "ClientFrank");
+            var grace = clients.FirstOrDefault(c => c.Username == "ClientGrace");
+            var henry = clients.FirstOrDefault(c => c.Username == "ClientHenry");
+            var isla = clients.FirstOrDefault(c => c.Username == "ClientIsla");
+            var jason = clients.FirstOrDefault(c => c.Username == "ClientJason");
 
             var dana = specialists.FirstOrDefault(s => s.Username == "SpecialistDana");
             var evan = specialists.FirstOrDefault(s => s.Username == "SpecialistEvan");
@@ -227,10 +305,17 @@ namespace ITrade.ApiServices.Helpers
             var ian = specialists.FirstOrDefault(s => s.Username == "SpecialistIan");
             var jack = specialists.FirstOrDefault(s => s.Username == "SpecialistJack");
             var karen = specialists.FirstOrDefault(s => s.Username == "SpecialistKaren");
+            var liam = specialists.FirstOrDefault(s => s.Username == "SpecialistLiam");
+            var mia = specialists.FirstOrDefault(s => s.Username == "SpecialistMia");
+            var noah = specialists.FirstOrDefault(s => s.Username == "SpecialistNoah");
+            var olivia = specialists.FirstOrDefault(s => s.Username == "SpecialistOlivia");
+            var peter = specialists.FirstOrDefault(s => s.Username == "SpecialistPeter");
+            var quinn = specialists.FirstOrDefault(s => s.Username == "SpecialistQuinn");
+            var riley = specialists.FirstOrDefault(s => s.Username == "SpecialistRiley");
+            var sophia = specialists.FirstOrDefault(s => s.Username == "SpecialistSophia");
 
             var projects = new List<Project>
             {
-                // Hiring projects (no worker assigned)
                 new Project
                 {
                     Name = "E-commerce Platform Backend",
@@ -276,8 +361,6 @@ namespace ITrade.ApiServices.Helpers
                     ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
                     CreatedAt = DateTime.UtcNow.AddDays(-7)
                 },
-
-                // In Progress projects (worker assigned)
                 new Project
                 {
                     Name = "Customer Portal Redesign",
@@ -318,8 +401,16 @@ namespace ITrade.ApiServices.Helpers
                     ProjectStatusTypeId = (int)ProjectStatusTypeEnum.InProgress,
                     CreatedAt = DateTime.UtcNow.AddDays(-25)
                 },
-
-                // Completed projects
+                new Project
+                {
+                    Name = "Real-Time Alert Center",
+                    Description = "Implement a real-time incident alert center with triage workflows and audit-ready event trails.",
+                    Deadline = DateTime.UtcNow.AddDays(20),
+                    OwnerId = grace!.Id,
+                    WorkerId = olivia!.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.InProgress,
+                    CreatedAt = DateTime.UtcNow.AddDays(-18)
+                },
                 new Project
                 {
                     Name = "Landing Page Development",
@@ -370,8 +461,26 @@ namespace ITrade.ApiServices.Helpers
                     ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Completed,
                     CreatedAt = DateTime.UtcNow.AddDays(-70)
                 },
-
-                // On Hold projects
+                new Project
+                {
+                    Name = "B2B Integration Hub",
+                    Description = "Deliver a robust integration hub for partners with webhook orchestration and SLA monitoring.",
+                    Deadline = DateTime.UtcNow.AddDays(-6),
+                    OwnerId = henry!.Id,
+                    WorkerId = liam!.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Completed,
+                    CreatedAt = DateTime.UtcNow.AddDays(-55)
+                },
+                new Project
+                {
+                    Name = "ETL Quality Stabilization",
+                    Description = "Stabilize ETL pipelines with validation checks, lineage visibility, and failure recovery improvements.",
+                    Deadline = DateTime.UtcNow.AddDays(-4),
+                    OwnerId = isla!.Id,
+                    WorkerId = mia!.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Completed,
+                    CreatedAt = DateTime.UtcNow.AddDays(-62)
+                },
                 new Project
                 {
                     Name = "Machine Learning Model",
@@ -389,6 +498,87 @@ namespace ITrade.ApiServices.Helpers
                     OwnerId = charlie.Id,
                     ProjectStatusTypeId = (int)ProjectStatusTypeEnum.OnHold,
                     CreatedAt = DateTime.UtcNow.AddDays(-35)
+                },
+                new Project
+                {
+                    Name = "Release Governance Automation",
+                    Description = "Automate release governance policies and exception handling for enterprise change management.",
+                    Deadline = DateTime.UtcNow.AddDays(95),
+                    OwnerId = jason!.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.OnHold,
+                    CreatedAt = DateTime.UtcNow.AddDays(-12)
+                },
+                new Project
+                {
+                    Name = "Event-Driven Order Processing",
+                    Description = "Design a high-throughput event-driven backend for processing orders and notifications in near real-time.",
+                    Deadline = DateTime.UtcNow.AddDays(70),
+                    OwnerId = alice.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-4)
+                },
+                new Project
+                {
+                    Name = "API Gateway Hardening",
+                    Description = "Implement API gateway policies, rate limiting, and observability for a microservices ecosystem.",
+                    Deadline = DateTime.UtcNow.AddDays(50),
+                    OwnerId = charlie.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                },
+                new Project
+                {
+                    Name = "Fraud Detection Pipeline",
+                    Description = "Build an ML-driven fraud detection pipeline with feature engineering and model monitoring.",
+                    Deadline = DateTime.UtcNow.AddDays(80),
+                    OwnerId = bob.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-6)
+                },
+                new Project
+                {
+                    Name = "Demand Forecasting Engine",
+                    Description = "Create predictive models for sales demand forecasting and integrate them into reporting workflows.",
+                    Deadline = DateTime.UtcNow.AddDays(95),
+                    OwnerId = emma.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-2)
+                },
+                new Project
+                {
+                    Name = "Cross-Platform Wellness App",
+                    Description = "Develop a modern cross-platform wellness app with clean UI and engagement tracking.",
+                    Deadline = DateTime.UtcNow.AddDays(65),
+                    OwnerId = frank.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-5)
+                },
+                new Project
+                {
+                    Name = "Mobile UX Modernization",
+                    Description = "Redesign and modernize the mobile product experience to improve retention and accessibility.",
+                    Deadline = DateTime.UtcNow.AddDays(55),
+                    OwnerId = david.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-4)
+                },
+                new Project
+                {
+                    Name = "SOC Automation Platform",
+                    Description = "Build security automation workflows for incident triage and response orchestration.",
+                    Deadline = DateTime.UtcNow.AddDays(75),
+                    OwnerId = bob.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                },
+                new Project
+                {
+                    Name = "Container Security Baseline",
+                    Description = "Define and implement secure container baselines, image scanning, and runtime controls.",
+                    Deadline = DateTime.UtcNow.AddDays(45),
+                    OwnerId = alice.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-2)
                 }
             };
 
@@ -411,20 +601,36 @@ namespace ITrade.ApiServices.Helpers
             AttachTagsToProject("CI/CD Pipeline Setup", "DevOps", "Docker", "Kubernetes", "Azure");
             AttachTagsToProject("Blockchain Smart Contracts", "Blockchain", "Cybersecurity");
             AttachTagsToProject("Legacy PHP Migration", "PHP", "Laravel", "Database Design", "SQL");
-
             AttachTagsToProject("Customer Portal Redesign", "React", "TypeScript", "UI/UX Design", "Web Development");
             AttachTagsToProject("API Integration Service", "C#", ".NET", "REST API");
             AttachTagsToProject("Mobile App Refactoring", "Mobile Development", "UI/UX Design");
             AttachTagsToProject("Cloud Security Audit", "Cybersecurity", "Cloud Architecture", "AWS");
-
+            AttachTagsToProject("Real-Time Alert Center", "Cybersecurity", "DevOps", "Cloud Architecture", "REST API");
             AttachTagsToProject("Landing Page Development", "JavaScript", "UI/UX Design", "Web Development");
             AttachTagsToProject("Database Migration", "SQL", "Azure", "Database Design");
             AttachTagsToProject("E-learning Portal", "Node.js", "Vue.js", "Web Development");
             AttachTagsToProject("Inventory Management System", "Java", "Spring Boot", "Database Design");
             AttachTagsToProject("Corporate Website", "React", "Web Development", "UI/UX Design");
-
             AttachTagsToProject("Machine Learning Model", "Python", "Machine Learning", "Data Science");
             AttachTagsToProject("AI Chatbot Integration", "Python", "REST API", "Machine Learning");
+            AttachTagsToProject("Event-Driven Order Processing", "C#", ".NET", "REST API", "Cloud Architecture", "SQL");
+            AttachTagsToProject("API Gateway Hardening", "C#", ".NET", "DevOps", "REST API", "Cybersecurity");
+            AttachTagsToProject("Fraud Detection Pipeline", "Python", "Machine Learning", "Data Science", "SQL");
+            AttachTagsToProject("Demand Forecasting Engine", "Python", "Machine Learning", "Data Science", "Azure");
+            AttachTagsToProject("Cross-Platform Wellness App", "Mobile Development", "UI/UX Design", "React", "TypeScript");
+            AttachTagsToProject("Mobile UX Modernization", "Mobile Development", "UI/UX Design", "Web Development");
+            AttachTagsToProject("SOC Automation Platform", "Cybersecurity", "DevOps", "AWS", "Cloud Architecture");
+            AttachTagsToProject("Container Security Baseline", "Cybersecurity", "Docker", "Kubernetes", "DevOps");
+            AttachTagsToProject("Compliance Knowledge Base", "C#", ".NET", "Database Design", "Web Development");
+            AttachTagsToProject("Real-Time Alert Center", "Cybersecurity", "DevOps", "Cloud Architecture", "REST API");
+            AttachTagsToProject("B2B Integration Hub", "C#", ".NET", "REST API", "Cloud Architecture");
+            AttachTagsToProject("Subscription Analytics Portal", "Data Science", "SQL", "Web Development", "React");
+            AttachTagsToProject("Patient Booking Experience", "Mobile Development", "UI/UX Design", "React", "TypeScript");
+            AttachTagsToProject("Clinical Notes AI Assistant", "Python", "Machine Learning", "Data Science", "REST API");
+            AttachTagsToProject("ETL Quality Stabilization", "Python", "SQL", "Data Science", "Azure");
+            AttachTagsToProject("Vendor Risk Scoring", "Cybersecurity", "Data Science", "Python", "Cloud Architecture");
+            AttachTagsToProject("Supplier Portal Revamp", "Web Development", "React", "TypeScript", "REST API");
+            AttachTagsToProject("Release Governance Automation", "DevOps", "Cloud Architecture", "Cybersecurity", "Docker");
 
             database.ProjectTags.AddRange(projectTags);
             await database.SaveChangesAsync();
@@ -443,6 +649,10 @@ namespace ITrade.ApiServices.Helpers
             var david = clients.First(c => c.Username == "ClientDavid");
             var emma = clients.First(c => c.Username == "ClientEmma");
             var frank = clients.First(c => c.Username == "ClientFrank");
+            var grace = clients.First(c => c.Username == "ClientGrace");
+            var henry = clients.First(c => c.Username == "ClientHenry");
+            var isla = clients.First(c => c.Username == "ClientIsla");
+            var jason = clients.First(c => c.Username == "ClientJason");
 
             var dana = specialists.First(s => s.Username == "SpecialistDana");
             var evan = specialists.First(s => s.Username == "SpecialistEvan");
@@ -452,6 +662,14 @@ namespace ITrade.ApiServices.Helpers
             var ian = specialists.First(s => s.Username == "SpecialistIan");
             var jack = specialists.First(s => s.Username == "SpecialistJack");
             var karen = specialists.First(s => s.Username == "SpecialistKaren");
+            var liam = specialists.First(s => s.Username == "SpecialistLiam");
+            var mia = specialists.First(s => s.Username == "SpecialistMia");
+            var noah = specialists.First(s => s.Username == "SpecialistNoah");
+            var olivia = specialists.First(s => s.Username == "SpecialistOlivia");
+            var peter = specialists.First(s => s.Username == "SpecialistPeter");
+            var quinn = specialists.First(s => s.Username == "SpecialistQuinn");
+            var riley = specialists.First(s => s.Username == "SpecialistRiley");
+            var sophia = specialists.First(s => s.Username == "SpecialistSophia");
 
             var ecommerceProject = projects.First(p => p.Name == "E-commerce Platform Backend");
             var dashboardProject = projects.First(p => p.Name == "Mobile App Dashboard");
@@ -459,31 +677,56 @@ namespace ITrade.ApiServices.Helpers
             var blockchainProject = projects.First(p => p.Name == "Blockchain Smart Contracts");
             var phpProject = projects.First(p => p.Name == "Legacy PHP Migration");
 
+            var eventDrivenProject = projects.First(p => p.Name == "Event-Driven Order Processing");
+            var gatewayHardeningProject = projects.First(p => p.Name == "API Gateway Hardening");
+            var fraudPipelineProject = projects.First(p => p.Name == "Fraud Detection Pipeline");
+            var forecastingProject = projects.First(p => p.Name == "Demand Forecasting Engine");
+            var wellnessProject = projects.First(p => p.Name == "Cross-Platform Wellness App");
+            var mobileUxProject = projects.First(p => p.Name == "Mobile UX Modernization");
+            var socAutomationProject = projects.First(p => p.Name == "SOC Automation Platform");
+            var containerSecurityProject = projects.First(p => p.Name == "Container Security Baseline");
+
+            var complianceProject = projects.First(p => p.Name == "Compliance Knowledge Base");
+            var b2bIntegrationProject = projects.First(p => p.Name == "B2B Integration Hub");
+            var patientBookingProject = projects.First(p => p.Name == "Patient Booking Experience");
+            var clinicalNotesProject = projects.First(p => p.Name == "Clinical Notes AI Assistant");
+            var etlStabilizationProject = projects.First(p => p.Name == "ETL Quality Stabilization");
+            var vendorRiskProject = projects.First(p => p.Name == "Vendor Risk Scoring");
+            var supplierPortalProject = projects.First(p => p.Name == "Supplier Portal Revamp");
+
             var requests = new List<Request>
             {
-                // Applications from specialists to hiring projects (pending)
                 new Request { Message = "I have extensive experience with .NET and REST APIs. I'd love to work on this e-commerce platform!", SenderId = dana.Id, ReceiverId = alice.Id, ProjectId = ecommerceProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddDays(-2) },
                 new Request { Message = "Full stack developer here. I can handle both the API and any frontend needs for this project.", SenderId = fiona.Id, ReceiverId = alice.Id, ProjectId = ecommerceProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddDays(-1) },
                 new Request { Message = "React and TypeScript are my specialties. I can create beautiful, responsive dashboards.", SenderId = evan.Id, ReceiverId = alice.Id, ProjectId = dashboardProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-12) },
                 new Request { Message = "DevOps is my passion. I've set up pipelines for multiple enterprise clients using Azure DevOps.", SenderId = george.Id, ReceiverId = bob.Id, ProjectId = cicdProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-6) },
                 new Request { Message = "I have a strong background in smart contract development and security best practices.", SenderId = ian.Id, ReceiverId = david.Id, ProjectId = blockchainProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-24) },
                 new Request { Message = "I've successfully migrated several PHP monoliths to modern frameworks. Let's talk.", SenderId = hannah.Id, ReceiverId = emma.Id, ProjectId = phpProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddDays(-3) },
-
-                // Invitations from clients to specialists (pending)
                 new Request { Message = "Hi Dana, I saw your profile and think you'd be perfect for our e-commerce project. Would you like to join?", SenderId = alice.Id, ReceiverId = dana.Id, ProjectId = ecommerceProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Invitation, Accepted = null, CreatedAt = DateTime.UtcNow.AddDays(-3) },
                 new Request { Message = "We need someone with strong Python background for our ML project, would you be available later this year?", SenderId = bob.Id, ReceiverId = jack.Id, ProjectId = projects.First(p => p.Name == "Machine Learning Model").Id, RequestTypeId = (int)ProjectRequestTypeEnum.Invitation, Accepted = null, CreatedAt = DateTime.UtcNow.AddDays(-5) },
-
-                // Rejected applications
                 new Request { Message = "I'm interested in the CI/CD pipeline project.", SenderId = evan.Id, ReceiverId = bob.Id, ProjectId = cicdProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = false, CreatedAt = DateTime.UtcNow.AddDays(-5) },
                 new Request { Message = "I can do this mobile app refactoring quickly.", SenderId = dana.Id, ReceiverId = frank.Id, ProjectId = projects.First(p => p.Name == "Mobile App Refactoring").Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = false, CreatedAt = DateTime.UtcNow.AddDays(-22) },
-
-                // Accepted applications/invitations (these led to in-progress or completed projects)
                 new Request { Message = "I'd like to work on the customer portal redesign.", SenderId = fiona.Id, ReceiverId = bob.Id, ProjectId = projects.First(p => p.Name == "Customer Portal Redesign").Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = true, CreatedAt = DateTime.UtcNow.AddDays(-16) },
                 new Request { Message = "I specialize in AWS architecture and security auditing.", SenderId = jack.Id, ReceiverId = david.Id, ProjectId = projects.First(p => p.Name == "Cloud Security Audit").Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = true, CreatedAt = DateTime.UtcNow.AddDays(-26) },
                 new Request { Message = "Happy to help you with the mobile app refactoring!", SenderId = karen.Id, ReceiverId = frank.Id, ProjectId = projects.First(p => p.Name == "Mobile App Refactoring").Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = true, CreatedAt = DateTime.UtcNow.AddDays(-21) },
                 new Request { Message = "I've reviewed your requirements and can deliver this portal.", SenderId = ian.Id, ReceiverId = emma.Id, ProjectId = projects.First(p => p.Name == "E-learning Portal").Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = true, CreatedAt = DateTime.UtcNow.AddDays(-85) },
                 new Request { Message = "I have the Java Spring Boot experience required for this inventory system.", SenderId = hannah.Id, ReceiverId = frank.Id, ProjectId = projects.First(p => p.Name == "Inventory Management System").Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = true, CreatedAt = DateTime.UtcNow.AddDays(-95) },
-                new Request { Message = "Hi Evan, loved your portfolio. Can you redesign our corporate site?", SenderId = alice.Id, ReceiverId = evan.Id, ProjectId = projects.First(p => p.Name == "Corporate Website").Id, RequestTypeId = (int)ProjectRequestTypeEnum.Invitation, Accepted = true, CreatedAt = DateTime.UtcNow.AddDays(-75) }
+                new Request { Message = "Hi Evan, loved your portfolio. Can you redesign our corporate site?", SenderId = alice.Id, ReceiverId = evan.Id, ProjectId = projects.First(p => p.Name == "Corporate Website").Id, RequestTypeId = (int)ProjectRequestTypeEnum.Invitation, Accepted = true, CreatedAt = DateTime.UtcNow.AddDays(-75) },
+                new Request { Message = "I can architect and implement this event-driven backend with robust API boundaries.", SenderId = liam.Id, ReceiverId = alice.Id, ProjectId = eventDrivenProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-9) },
+                new Request { Message = "I have delivered API gateway hardening projects focused on resiliency and security.", SenderId = liam.Id, ReceiverId = charlie.Id, ProjectId = gatewayHardeningProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-7) },
+                new Request { Message = "I can design and productionize the fraud detection pipeline end-to-end.", SenderId = mia.Id, ReceiverId = bob.Id, ProjectId = fraudPipelineProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-10) },
+                new Request { Message = "Forecasting models and data quality checks are my strengths; I'd love to contribute.", SenderId = mia.Id, ReceiverId = emma.Id, ProjectId = forecastingProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-8) },
+                new Request { Message = "I specialize in high-quality mobile UX and cross-platform delivery.", SenderId = noah.Id, ReceiverId = frank.Id, ProjectId = wellnessProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-11) },
+                new Request { Message = "I can modernize your mobile UX while keeping performance and accessibility central.", SenderId = noah.Id, ReceiverId = david.Id, ProjectId = mobileUxProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-6) },
+                new Request { Message = "I can build practical SOC automation workflows and improve incident response speed.", SenderId = olivia.Id, ReceiverId = bob.Id, ProjectId = socAutomationProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-5) },
+                new Request { Message = "I have deep container security experience and can define enforceable baselines.", SenderId = olivia.Id, ReceiverId = alice.Id, ProjectId = containerSecurityProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-4) },
+                new Request { Message = "I can craft a clean knowledge base UX and implement performant search behavior.", SenderId = peter.Id, ReceiverId = grace.Id, ProjectId = complianceProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-14) },
+                new Request { Message = "I can support patient booking flows with polished frontend delivery and accessibility in mind.", SenderId = sophia.Id, ReceiverId = isla.Id, ProjectId = patientBookingProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-9) },
+                new Request { Message = "I can build the API layer and integration model for this supplier portal revamp.", SenderId = riley.Id, ReceiverId = jason.Id, ProjectId = supplierPortalProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-6) },
+                new Request { Message = "My background in cloud architecture and risk controls aligns well with this vendor scoring initiative.", SenderId = quinn.Id, ReceiverId = jason.Id, ProjectId = vendorRiskProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-5) },
+                new Request { Message = "I can deliver the partner integration hub with reliable webhook orchestration and monitoring.", SenderId = liam.Id, ReceiverId = henry.Id, ProjectId = b2bIntegrationProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = true, CreatedAt = DateTime.UtcNow.AddDays(-56) },
+                new Request { Message = "I can stabilize your ETL quality process and ship measurable reliability improvements.", SenderId = mia.Id, ReceiverId = isla.Id, ProjectId = etlStabilizationProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = true, CreatedAt = DateTime.UtcNow.AddDays(-63) },
+                new Request { Message = "I can prototype and integrate the clinical notes assistant while respecting accuracy and review workflows.", SenderId = mia.Id, ReceiverId = isla.Id, ProjectId = clinicalNotesProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Invitation, Accepted = false, CreatedAt = DateTime.UtcNow.AddDays(-2) }
             };
 
             database.Requests.AddRange(requests);
@@ -499,27 +742,36 @@ namespace ITrade.ApiServices.Helpers
             var charlie = clients.First(c => c.Username == "ClientCharlie");
             var emma = clients.First(c => c.Username == "ClientEmma");
             var frank = clients.First(c => c.Username == "ClientFrank");
+            var grace = clients.First(c => c.Username == "ClientGrace");
+            var henry = clients.First(c => c.Username == "ClientHenry");
+            var isla = clients.First(c => c.Username == "ClientIsla");
 
             var dana = specialists.First(s => s.Username == "SpecialistDana");
             var evan = specialists.First(s => s.Username == "SpecialistEvan");
             var fiona = specialists.First(s => s.Username == "SpecialistFiona");
             var hannah = specialists.First(s => s.Username == "SpecialistHannah");
             var ian = specialists.First(s => s.Username == "SpecialistIan");
+            var liam = specialists.First(s => s.Username == "SpecialistLiam");
+            var mia = specialists.First(s => s.Username == "SpecialistMia");
+            var olivia = specialists.First(s => s.Username == "SpecialistOlivia");
 
             var reviews = new List<Review>
             {
-                // Reviews for completed projects
                 new Review { Title = "Excellent work on landing page", Comment = "Fiona delivered the landing page ahead of schedule with great attention to detail. Very responsive to feedback and made all requested changes quickly.", Rating = 5, ReviewerId = alice.Id, RevieweeId = fiona.Id, CreatedAt = DateTime.UtcNow.AddDays(-4) },
                 new Review { Title = "Great client to work with", Comment = "Alice provided clear requirements and timely feedback throughout the project. Would work with again!", Rating = 5, ReviewerId = fiona.Id, RevieweeId = alice.Id, CreatedAt = DateTime.UtcNow.AddDays(-4) },
                 new Review { Title = "Professional database migration", Comment = "Dana handled our complex database migration flawlessly. Zero data loss and minimal downtime. Highly recommended for database work.", Rating = 5, ReviewerId = charlie.Id, RevieweeId = dana.Id, CreatedAt = DateTime.UtcNow.AddDays(-8) },
                 new Review { Title = "Good collaboration", Comment = "Charlie was helpful in providing access to legacy systems and answering questions about the data structure.", Rating = 4, ReviewerId = dana.Id, RevieweeId = charlie.Id, CreatedAt = DateTime.UtcNow.AddDays(-8) },
-                new Review { Title = "Solid work overall", Comment = "Good technical skills but communication could have been better. Final result was what we needed.", Rating = 4, ReviewerId = alice.Id, RevieweeId = dana.Id, CreatedAt = DateTime.UtcNow.AddDays(-60) },
-                
-                // New Reviews
+                new Review { Title = "Solid work overall", Comment = "Good technical skills but communication could have been better. Final result was what we needed.", Rating = 4, ReviewerId = charlie.Id, RevieweeId = dana.Id, CreatedAt = DateTime.UtcNow.AddDays(-60) },
                 new Review { Title = "Fantastic E-learning platform", Comment = "Ian built an incredible product. His knowledge of Node.js and modern web frameworks is impressive.", Rating = 5, ReviewerId = emma.Id, RevieweeId = ian.Id, CreatedAt = DateTime.UtcNow.AddDays(-1) },
                 new Review { Title = "A pleasure to work for", Comment = "Emma is a great communicator and pays on time. The project scope was very clear.", Rating = 5, ReviewerId = ian.Id, RevieweeId = emma.Id, CreatedAt = DateTime.UtcNow.AddDays(-1) },
                 new Review { Title = "Robust Inventory System", Comment = "Hannah delivered a very solid Java backend. We had some minor bugs in the testing phase but she fixed them very fast.", Rating = 4, ReviewerId = frank.Id, RevieweeId = hannah.Id, CreatedAt = DateTime.UtcNow.AddDays(-12) },
-                new Review { Title = "Responsive and talented", Comment = "Evan gave our corporate website the exact facelift it needed. Highly recommend for any front-end UI work.", Rating = 5, ReviewerId = alice.Id, RevieweeId = evan.Id, CreatedAt = DateTime.UtcNow.AddDays(-20) }
+                new Review { Title = "Responsive and talented", Comment = "Evan gave our corporate website the exact facelift it needed. Highly recommend for any front-end UI work.", Rating = 5, ReviewerId = alice.Id, RevieweeId = evan.Id, CreatedAt = DateTime.UtcNow.AddDays(-20) },
+                new Review { Title = "Excellent backend architecture guidance", Comment = "Liam quickly identified scaling bottlenecks and proposed a clean, reliable API architecture.", Rating = 5, ReviewerId = henry.Id, RevieweeId = liam.Id, CreatedAt = DateTime.UtcNow.AddDays(-6) },
+                new Review { Title = "Focused and fair stakeholder", Comment = "Henry was clear about priorities and quick with decisions, which kept delivery smooth.", Rating = 5, ReviewerId = liam.Id, RevieweeId = henry.Id, CreatedAt = DateTime.UtcNow.AddDays(-6) },
+                new Review { Title = "Strong data reliability delivery", Comment = "Mia brought order to our ETL pipeline and significantly reduced data quality incidents.", Rating = 5, ReviewerId = isla.Id, RevieweeId = mia.Id, CreatedAt = DateTime.UtcNow.AddDays(-3) },
+                new Review { Title = "Clear requirements and fast feedback", Comment = "Isla gave precise requirements and quick validation throughout the engagement.", Rating = 5, ReviewerId = mia.Id, RevieweeId = isla.Id, CreatedAt = DateTime.UtcNow.AddDays(-3) },
+                new Review { Title = "Great security mindset", Comment = "Olivia was proactive about threat modeling and gave us actionable hardening steps.", Rating = 4, ReviewerId = grace.Id, RevieweeId = olivia.Id, CreatedAt = DateTime.UtcNow.AddDays(-2) },
+                new Review { Title = "Collaborative and decisive client", Comment = "Grace communicates clearly and keeps scope aligned with project goals.", Rating = 5, ReviewerId = olivia.Id, RevieweeId = grace.Id, CreatedAt = DateTime.UtcNow.AddDays(-2) }
             };
 
             database.Reviews.AddRange(reviews);
