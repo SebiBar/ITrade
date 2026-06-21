@@ -7,7 +7,7 @@ var postgres = builder.AddAzurePostgresFlexibleServer("db")
     .WithPasswordAuthentication(pgUser, pgPass)
     .RunAsContainer(localContainer =>
     {
-        localContainer.WithDataVolume();
+        //localContainer.WithDataVolume();
 
         if (builder.ExecutionContext.IsRunMode)
         {

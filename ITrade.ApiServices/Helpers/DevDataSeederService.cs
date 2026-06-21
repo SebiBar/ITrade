@@ -579,6 +579,60 @@ namespace ITrade.ApiServices.Helpers
                     OwnerId = alice.Id,
                     ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
                     CreatedAt = DateTime.UtcNow.AddDays(-2)
+                },
+                new Project
+                {
+                    Name = "Compliance Knowledge Base",
+                    Description = "Build a secure platform for searching and managing compliance documents.",
+                    Deadline = DateTime.UtcNow.AddDays(45),
+                    OwnerId = grace!.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-2)
+                },
+                new Project
+                {
+                    Name = "Subscription Analytics Portal",
+                    Description = "Implement actionable analytics for subscription lifecycle and revenue metrics.",
+                    Deadline = DateTime.UtcNow.AddDays(30),
+                    OwnerId = bob!.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-5)
+                },
+                new Project
+                {
+                    Name = "Patient Booking Experience",
+                    Description = "Modernize the appointment scheduling flow for patients with accessible UI.",
+                    Deadline = DateTime.UtcNow.AddDays(40),
+                    OwnerId = isla!.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-7)
+                },
+                new Project
+                {
+                    Name = "Clinical Notes AI Assistant",
+                    Description = "Create an AI-powered assistant for generating clinical notes.",
+                    Deadline = DateTime.UtcNow.AddDays(120),
+                    OwnerId = isla.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                },
+                new Project
+                {
+                    Name = "Vendor Risk Scoring",
+                    Description = "Develop an automated risk scoring system for third-party vendors.",
+                    Deadline = DateTime.UtcNow.AddDays(60),
+                    OwnerId = jason!.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                },
+                new Project
+                {
+                    Name = "Supplier Portal Revamp",
+                    Description = "Revamp the portal used by suppliers for onboarding and invoice management.",
+                    Deadline = DateTime.UtcNow.AddDays(55),
+                    OwnerId = jason.Id,
+                    ProjectStatusTypeId = (int)ProjectStatusTypeEnum.Hiring,
+                    CreatedAt = DateTime.UtcNow.AddDays(-4)
                 }
             };
 
@@ -591,9 +645,12 @@ namespace ITrade.ApiServices.Helpers
             // Helper function to add tags easily
             void AttachTagsToProject(string projectName, params string[] tagNames)
             {
-                var project = projects.First(p => p.Name == projectName);
-                var matchedTags = tags.Where(t => tagNames.Contains(t.Name)).ToList();
-                projectTags.AddRange(matchedTags.Select(t => new ProjectTag { ProjectId = project.Id, TagId = t.Id }));
+                var project = projects.FirstOrDefault(p => p.Name == projectName);
+                if (project != null)
+                {
+                    var matchedTags = tags.Where(t => tagNames.Contains(t.Name)).ToList();
+                    projectTags.AddRange(matchedTags.Select(t => new ProjectTag { ProjectId = project.Id, TagId = t.Id }));
+                }
             }
 
             AttachTagsToProject("E-commerce Platform Backend", "C#", ".NET", "REST API", "SQL", "Azure");
