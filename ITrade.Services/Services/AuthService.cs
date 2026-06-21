@@ -330,13 +330,16 @@ namespace ITrade.Services.Services
 
         private async Task SendForgotPasswordEmailAsync(string toEmail, string username, string tokenValue)
         {
-            var apiBase = urlSettings.Value.ApiBase.TrimEnd('/');
-            var changePasswordLink = $"{apiBase}/auth/forgot-password?token={tokenValue}";
+            var frontendBase = ResolveFrontendBaseUrl();
+            var resetPasswordPath = NormalizePath("/auth/reset-password", "/auth/reset-password"); // Could take from urlSettings later if needed
+            var encodedToken = Uri.EscapeDataString(tokenValue);
+            var changePasswordLink = $"{frontendBase}{resetPasswordPath}?token={encodedToken}";
 
             var model = new Dictionary<string, string>
             {
                 ["FullName"] = string.IsNullOrWhiteSpace(username) ? "there" : username,
-                ["ChangePasswordLink"] = changePasswordLink
+                ["ResetLink"] = changePasswordLink,
+                ["Token"] = tokenValue
             };
 
             var html = await templateService.RenderAsync(templateSettings.Value.Email.ResetHtml, model);

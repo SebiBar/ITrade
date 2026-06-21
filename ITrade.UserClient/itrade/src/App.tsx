@@ -5,6 +5,7 @@ import { Navbar } from './components/navbar';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 import ProfilePage from './pages/ProfilePage';
@@ -68,6 +69,14 @@ function AppRoutes() {
         }
       />
       <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+      <Route
+        path="/auth/reset-password"
+        element={
+          <GuestRoute>
+            <ResetPasswordPage />
+          </GuestRoute>
+        }
+      />
       <Route
         path="/dashboard"
         element={
