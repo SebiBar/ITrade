@@ -1,6 +1,7 @@
 # ITrade
 
 This project is structured using **.NET Aspire** for local orchestration, deploying and managing the API, frontend app, and database as a unified distributed application.
+To get started, set up your .env in ApiServices, and run 'npm install' in the frontend directory.
 
 ## Architecture
 - **Frontend**: React 19 application (`ITrade.UserClient/itrade`) using React Router and Tailwind CSS v4. Managed via Vite in development and Nginx in production/containers.
