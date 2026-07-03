@@ -753,7 +753,6 @@ namespace ITrade.ApiServices.Helpers
 
             var requests = new List<Request>
             {
-                new Request { Message = "I have extensive experience with .NET and REST APIs. I'd love to work on this e-commerce platform!", SenderId = dana.Id, ReceiverId = alice.Id, ProjectId = ecommerceProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddDays(-2) },
                 new Request { Message = "Full stack developer here. I can handle both the API and any frontend needs for this project.", SenderId = fiona.Id, ReceiverId = alice.Id, ProjectId = ecommerceProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddDays(-1) },
                 new Request { Message = "React and TypeScript are my specialties. I can create beautiful, responsive dashboards.", SenderId = evan.Id, ReceiverId = alice.Id, ProjectId = dashboardProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-12) },
                 new Request { Message = "DevOps is my passion. I've set up pipelines for multiple enterprise clients using Azure DevOps.", SenderId = george.Id, ReceiverId = bob.Id, ProjectId = cicdProject.Id, RequestTypeId = (int)ProjectRequestTypeEnum.Application, Accepted = null, CreatedAt = DateTime.UtcNow.AddHours(-6) },
@@ -814,7 +813,6 @@ namespace ITrade.ApiServices.Helpers
 
             var reviews = new List<Review>
             {
-                new Review { Title = "Excellent work on landing page", Comment = "Fiona delivered the landing page ahead of schedule with great attention to detail. Very responsive to feedback and made all requested changes quickly.", Rating = 5, ReviewerId = alice.Id, RevieweeId = fiona.Id, CreatedAt = DateTime.UtcNow.AddDays(-4) },
                 new Review { Title = "Great client to work with", Comment = "Alice provided clear requirements and timely feedback throughout the project. Would work with again!", Rating = 5, ReviewerId = fiona.Id, RevieweeId = alice.Id, CreatedAt = DateTime.UtcNow.AddDays(-4) },
                 new Review { Title = "Professional database migration", Comment = "Dana handled our complex database migration flawlessly. Zero data loss and minimal downtime. Highly recommended for database work.", Rating = 5, ReviewerId = charlie.Id, RevieweeId = dana.Id, CreatedAt = DateTime.UtcNow.AddDays(-8) },
                 new Review { Title = "Good collaboration", Comment = "Charlie was helpful in providing access to legacy systems and answering questions about the data structure.", Rating = 4, ReviewerId = dana.Id, RevieweeId = charlie.Id, CreatedAt = DateTime.UtcNow.AddDays(-8) },
